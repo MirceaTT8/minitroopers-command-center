@@ -1,0 +1,281 @@
+{
+  "Comanche Auto": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Browning": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Bazooka": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Grenade": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Pump Action Shotgun": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Thompson": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "FAMAS": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "UMP": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Heavy Machine Gun": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "SparrowHawk": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Desert Eagle": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Revolver": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Beretta": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Sniper Rifle": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Loader": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Nimble Fingers": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Hydroshock Shells": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+  "Paralysing Shells": {
+    "type": "Weapon",
+    "color": "Red",
+    "sortOrder": 1,
+    "categoryLabel": "1. RED — Weapons & Munitions"
+  },
+
+  "Saboteur": {
+    "type": "Role",
+    "color": "Purple",
+    "sortOrder": 2,
+    "categoryLabel": "2. BLUE / PURPLE — Role & Specialization"
+  },
+  "Comms. Officer": {
+    "type": "Role",
+    "color": "Purple",
+    "sortOrder": 2,
+    "categoryLabel": "2. BLUE / PURPLE — Role & Specialization"
+  },
+  "Scout": {
+    "type": "Role",
+    "color": "Purple",
+    "sortOrder": 2,
+    "categoryLabel": "2. BLUE / PURPLE — Role & Specialization"
+  },
+  "Doctor": {
+    "type": "Role",
+    "color": "Purple",
+    "sortOrder": 2,
+    "categoryLabel": "2. BLUE / PURPLE — Role & Specialization"
+  },
+  "Munitions": {
+    "type": "Role",
+    "color": "Purple",
+    "sortOrder": 2,
+    "categoryLabel": "2. BLUE / PURPLE — Role & Specialization"
+  },
+  "Soldier": {
+    "type": "Role",
+    "color": "Purple",
+    "sortOrder": 2,
+    "categoryLabel": "2. BLUE / PURPLE — Role & Specialization"
+  },
+  "Pilot": {
+    "type": "Role",
+    "color": "Purple",
+    "sortOrder": 2,
+    "categoryLabel": "2. BLUE / PURPLE — Role & Specialization"
+  },
+  "Spy": {
+    "type": "Role",
+    "color": "Purple",
+    "sortOrder": 2,
+    "categoryLabel": "2. BLUE / PURPLE — Role & Specialization"
+  },
+
+  "Smart": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Suspicious": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Twinoid": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Trigger Happy": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Sprint": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Sprinter": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Dodge": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Anatomy": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Heartbreaker": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "On Point": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Adrenaline": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Motorcycle": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+  "Rush": {
+    "type": "Active",
+    "color": "Yellow",
+    "sortOrder": 3,
+    "categoryLabel": "3. YELLOW / ORANGE — Active Combat & Tactical Skills"
+  },
+
+  "Hard Boiled": {
+    "type": "Passive",
+    "color": "Green",
+    "sortOrder": 4,
+    "categoryLabel": "4. GREEN / DARK — Passives & Survival"
+  },
+  "Sturdy": {
+    "type": "Passive",
+    "color": "Green",
+    "sortOrder": 4,
+    "categoryLabel": "4. GREEN / DARK — Passives & Survival"
+  },
+  "Bulletproof Vest": {
+    "type": "Passive",
+    "color": "Green",
+    "sortOrder": 4,
+    "categoryLabel": "4. GREEN / DARK — Passives & Survival"
+  },
+  "Tuck 'n' Roll": {
+    "type": "Passive",
+    "color": "Green",
+    "sortOrder": 4,
+    "categoryLabel": "4. GREEN / DARK — Passives & Survival"
+  },
+  "Survivor": {
+    "type": "Passive",
+    "color": "Green",
+    "sortOrder": 4,
+    "categoryLabel": "4. GREEN / DARK — Passives & Survival"
+  },
+  "Camouflage": {
+    "type": "Passive",
+    "color": "Green",
+    "sortOrder": 4,
+    "categoryLabel": "4. GREEN / DARK — Passives & Survival"
+  },
+  "Out of Sight": {
+    "type": "Passive",
+    "color": "Green",
+    "sortOrder": 4,
+    "categoryLabel": "4. GREEN / DARK — Passives & Survival"
+  }
+}
