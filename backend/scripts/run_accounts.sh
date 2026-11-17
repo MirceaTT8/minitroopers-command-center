@@ -1,13 +1,16 @@
 #!/bin/bash
 
 prefix="$(cd "$(dirname "$0")" && pwd)"
-scrape_flag=""
+mode_flag=""
 
 # 1. Parse CLI flags
 for arg in "$@"; do
     case "$arg" in
         --scrape-only|-s|--sync)
-            scrape_flag="--scrape-only"
+            mode_flag="--scrape-only"
+            ;;
+        --request-upgrade|-u)
+            mode_flag="--request-upgrade"
             ;;
     esac
 done
@@ -25,8 +28,6 @@ fi
 # 3. Source secret.cfg and extract all "user:pass" pairs
 source "$secret_file"
 
-# If secret.cfg defines accounts=("user1:pass1" "user2:pass2"), use it;
-# otherwise extract all quoted "user:pass" strings directly from the file.
 if [[ ${#accounts[@]} -eq 0 ]]; then
     mapfile -t accounts < <(grep -Eo '"[^"]+:[^"]+"' "$secret_file" | tr -d '"')
 fi
@@ -36,13 +37,13 @@ if [[ ${#accounts[@]} -eq 0 ]]; then
     exit 1
 fi
 
-# 4. Run troopers.sh for each account, forwarding --scrape-only if enabled
+# 4. Execute troopers.sh for each account
 for entry in "${accounts[@]}"; do
     user="${entry%%:*}"
     pass="${entry#*:}"
 
-    if [[ -n "$scrape_flag" ]]; then
-        "$prefix/troopers.sh" "$scrape_flag" "$user" "$pass"
+    if [[ -n "$mode_flag" ]]; then
+        "$prefix/troopers.sh" "$mode_flag" "$user" "$pass"
     else
         "$prefix/troopers.sh" "$user" "$pass"
     fi

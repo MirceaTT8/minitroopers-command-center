@@ -51,7 +51,9 @@
         v-for="account in store.accounts"
         :key="account.id"
         :account="account"
+        :isUpgrading="store.isAccountUpgrading(account.id)"
         @select="goToAccountDetail"
+        @request-upgrade="handleRequestUpgrade"
       />
     </div>
   </div>
@@ -68,6 +70,10 @@ const store = useAccountsStore()
 
 function goToAccountDetail(accountId) {
   router.push(`/account/${accountId}`)
+}
+
+async function handleRequestUpgrade(accountId) {
+  await store.requestUpgradeForAccount(accountId)
 }
 
 onMounted(() => {

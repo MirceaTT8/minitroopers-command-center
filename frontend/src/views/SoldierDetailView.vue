@@ -1,15 +1,38 @@
 <template>
   <div v-if="account && soldier" class="min-h-screen bg-slate-900 text-white p-8">
-    <div class="flex items-center gap-4 mb-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+      <div class="flex items-center gap-4">
+        <button
+          @click="$router.push('/')"
+          class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-sm font-bold cursor-pointer"
+        >
+          &lt;- Back to List
+        </button>
+        <h1 class="text-2xl font-bold text-sky-400">
+          {{ account.name }} — {{ soldier.name }}'s Stats Sheet (Lvl {{ soldier.level ?? '?' }})
+        </h1>
+      </div>
+
       <button
-        @click="$router.push('/')"
-        class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-sm font-bold cursor-pointer"
+        @click="handleRequestUpgrade"
+        :disabled="isUpgrading"
+        class="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-4 py-2 rounded-lg font-bold text-xs text-white cursor-pointer border border-emerald-400"
       >
-        &lt;- Back to List
+        {{
+          isUpgrading
+            ? 'Requesting /t/0 Upgrade...'
+            : soldier.availableUpgrades?.length
+              ? 'Refresh Upgrade Options (/t/0)'
+              : `Request Upgrade on /t/0 (${soldier.upgradeCost} T)`
+        }}
       </button>
-      <h1 class="text-2xl font-bold text-sky-400">
-        {{ account.name }} — {{ soldier.name }}'s Stats Sheet (Lvl {{ soldier.level ?? '?' }})
-      </h1>
+    </div>
+
+    <div
+      v-if="store.error"
+      class="bg-red-950/80 border border-red-500 text-red-200 p-3 rounded-lg mb-4 text-sm"
+    >
+      {{ store.error }}
     </div>
 
     <div
@@ -20,7 +43,10 @@
           : 'bg-red-950 border-red-500 text-red-300'
       "
     >
-      <span v-if="canUpgrade">
+      <span v-if="soldier.availableUpgrades?.length">
+        [UPGRADE OPTIONS READY] {{ soldier.availableUpgrades.length }} skill choices available below for {{ soldier.name }}!
+      </span>
+      <span v-else-if="canUpgrade">
         [UPGRADE AVAILABLE] Credits: {{ account.credits }} T | Upgrade Cost:
         {{ soldier.upgradeCost }} T | Remaining after upgrade:
         {{ account.credits - soldier.upgradeCost }} T
@@ -32,18 +58,24 @@
       </span>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Upgrade Options Box placed prominently when options are present or requested -->
+    <div class="mb-6">
+      <UpgradeChoicesBox
+        :account="account"
+        :soldier="soldier"
+        :canUpgrade="canUpgrade"
+        :isUpgrading="isUpgrading"
+        @request-upgrade="handleRequestUpgrade"
+        @select-upgrade="handleSelectUpgrade"
+      />
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <SoldierStatsPanel :account="account" :soldier="soldier" />
       <div class="lg:col-span-2">
         <SkillColorGrid :skills="soldier.skills" />
       </div>
     </div>
-
-    <UpgradeChoicesBox
-      :account="account"
-      :soldier="soldier"
-      :canUpgrade="canUpgrade"
-    />
   </div>
 </template>
 
@@ -60,13 +92,35 @@ const store = useAccountsStore()
 const account = ref(null)
 
 const soldier = computed(() => account.value?.firstSoldier || null)
+const isUpgrading = computed(() =>
+  store.isAccountUpgrading(route.params.accountId)
+)
 const canUpgrade = computed(() => {
   if (!account.value || !soldier.value) return false
   return (
-    soldier.value.upgradeCost > 0 &&
-    account.value.credits >= soldier.value.upgradeCost
+    (soldier.value.upgradeCost > 0 &&
+      account.value.credits >= soldier.value.upgradeCost) ||
+    (soldier.value.availableUpgrades &&
+      soldier.value.availableUpgrades.length > 0)
   )
 })
+
+async function handleRequestUpgrade() {
+  const updated = await store.requestUpgradeForAccount(route.params.accountId)
+  if (updated) {
+    account.value = updated
+  }
+}
+
+async function handleSelectUpgrade(selectUrl) {
+  const updated = await store.chooseUpgradeForAccount(
+    route.params.accountId,
+    selectUrl
+  )
+  if (updated) {
+    account.value = updated
+  }
+}
 
 onMounted(async () => {
   account.value = await store.getAccount(route.params.accountId)

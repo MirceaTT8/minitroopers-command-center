@@ -24,3 +24,33 @@ export async function triggerAccountsSync() {
   }
   return data
 }
+
+export async function requestSoldierUpgrade(accountId) {
+  const response = await fetch(
+    `/api/account/${encodeURIComponent(accountId)}/request-upgrade`,
+    {
+      method: 'POST',
+    }
+  )
+  const data = await response.json()
+  if (!response.ok) {
+    throw new Error(data.details || data.error || 'Upgrade request failed')
+  }
+  return data
+}
+
+export async function selectSoldierUpgrade(accountId, selectUrl) {
+  const response = await fetch(
+    `/api/account/${encodeURIComponent(accountId)}/select-upgrade`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ selectUrl }),
+    }
+  )
+  const data = await response.json()
+  if (!response.ok) {
+    throw new Error(data.details || data.error || 'Selecting upgrade failed')
+  }
+  return data
+}

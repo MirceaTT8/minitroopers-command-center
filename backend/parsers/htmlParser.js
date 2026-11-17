@@ -14,7 +14,6 @@ const upgradeCostTableRaw = JSON.parse(
   fs.readFileSync(path.join(CONFIG_DIR, 'upgradeCostTable.json'), 'utf-8')
 );
 
-// Normalize skills list whether skillsDictionary.json is { skills: [...] }, [...], or { key: {...} }
 const skillsList = Array.isArray(skillsDictionaryRaw?.skills)
   ? skillsDictionaryRaw.skills
   : Array.isArray(skillsDictionaryRaw)
@@ -31,7 +30,6 @@ const skillsList = Array.isArray(skillsDictionaryRaw?.skills)
           description: val.description ?? ''
         }));
 
-// Normalize upgradeCostTable whether nested under costToCurrentLevel or flat
 const costToLevelMap =
   upgradeCostTableRaw?.costToCurrentLevel || upgradeCostTableRaw || {};
 
@@ -61,6 +59,14 @@ for (const skill of skillsList) {
   }
 }
 
+function cleanHtmlEntities(str) {
+  return String(str || '')
+    .replace(/&#39;|&rsquo;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .trim();
+}
+
 function getSelectedOptionText($, selectName) {
   const select = $(`form#config select[name="${selectName}"]`);
   if (!select.length) return 'Unknown';
@@ -72,10 +78,128 @@ function getSelectedOptionText($, selectName) {
   return select.find('option').first().text().trim() || 'Unknown';
 }
 
+function extractUpgradeChoicesFromHtml(htmlContent) {
+  if (!htmlContent) return [];
+  const $ = cheerio.load(htmlContent);
+  const choices = [];
+  const seenKeys = new Set();
+
+  function addChoice(rawName, selectUrl = null) {
+    const cleaned = cleanHtmlEntities(rawName);
+    if (!cleaned) return;
+    const matched = skillLookupMap.get(cleaned.toLowerCase());
+    if (!matched) return;
+    if (seenKeys.has(matched.key)) return;
+
+    seenKeys.add(matched.key);
+    choices.push({
+      ...matched,
+      selectUrl: selectUrl || null
+    });
+  }
+
+  // 1. Check any <ul class="skills"> that is NOT the main soldier skill grid (no li.soldier)
+  $('ul.skills').each((_, ul) => {
+    if ($(ul).find('li.soldier').length > 0) {
+      // Even inside main ul.skills, if an <li> wraps an <a href="..."> or has a levelup choice class, capture it
+      $(ul)
+        .find('li')
+        .each((__, li) => {
+          const linkHref =
+            $(li).find('a').attr('href') || $(li).attr('onclick') || '';
+          if (linkHref && !$(li).hasClass('soldier')) {
+            const onmouseover =
+              $(li).attr('onmouseover') ||
+              $(li).find('[onmouseover]').attr('onmouseover') ||
+              '';
+            const m = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
+            if (m) addChoice(m[1], $(li).find('a').attr('href'));
+          }
+        });
+      return;
+    }
+
+    $(ul)
+      .find('li')
+      .each((__, li) => {
+        const onmouseover =
+          $(li).attr('onmouseover') ||
+          $(li).find('[onmouseover]').attr('onmouseover') ||
+          '';
+        const m = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
+        const href =
+          $(li).find('a').attr('href') ||
+          $(li).closest('a').attr('href') ||
+          null;
+        if (m) {
+          addChoice(m[1], href);
+        }
+      });
+  });
+
+  // 2. Scan .sheetright, .levelup, .choices, and any links outside form#config and main ul.skills
+  $('.sheetright, .levelup, .choose, .choices')
+    .find('*')
+    .each((_, el) => {
+      if ($(el).closest('form#config').length > 0) return;
+
+      const onmouseover = $(el).attr('onmouseover') || '';
+      const tipMatch = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
+      const href =
+        $(el).attr('href') ||
+        $(el).find('a').first().attr('href') ||
+        $(el).closest('a').attr('href') ||
+        null;
+
+      if (tipMatch) {
+        addChoice(tipMatch[1], href);
+      }
+    });
+
+  // 3. Scan any <a> tags pointing to skill selection endpoints (/t/0?..., /levelup/0?...)
+  $('a[href]').each((_, a) => {
+    if ($(a).closest('form#config').length > 0) return;
+    if ($(a).closest('ul.skills').find('li.soldier').length > 0) return;
+
+    const href = $(a).attr('href') || '';
+    const onmouseover = $(a).attr('onmouseover') || '';
+    const tipMatch = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
+    if (tipMatch) {
+      addChoice(tipMatch[1], href);
+      return;
+    }
+
+    const linkText = cleanHtmlEntities($(a).text());
+    if (linkText && skillLookupMap.has(linkText.toLowerCase())) {
+      addChoice(linkText, href);
+    }
+  });
+
+  // 4. Scan any standalone [onmouseover] outside the main soldier ul.skills grid and form#config
+  $('[onmouseover]').each((_, el) => {
+    if ($(el).closest('form#config').length > 0) return;
+    if ($(el).closest('ul.skills').find('li.soldier').length > 0) return;
+
+    const onmouseover = $(el).attr('onmouseover') || '';
+    const tipMatch = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
+    if (tipMatch) {
+      const href =
+        $(el).attr('href') ||
+        $(el).find('a').first().attr('href') ||
+        $(el).closest('a').attr('href') ||
+        null;
+      addChoice(tipMatch[1], href);
+    }
+  });
+
+  return choices;
+}
+
 function parseAccountFolder(accountId) {
   const accountDir = path.join(RAW_HTML_DIR, accountId);
   const t0Path = path.join(accountDir, 't0.html');
   const hqPath = path.join(accountDir, 'hq.html');
+  const levelup0Path = path.join(accountDir, 'levelup0.html');
 
   if (!fs.existsSync(t0Path)) {
     return null;
@@ -105,24 +229,30 @@ function parseAccountFolder(accountId) {
     accountId;
   const avatarUrl = soldierImg.attr('src') || null;
 
-  const upgradeText = $t0('.sheetright a[href*="levelup"]').first().text();
+  const upgradeLinkEl = $t0('.sheetright a[href*="levelup"]').first();
+  const levelupUrl = upgradeLinkEl.attr('href') || null;
+  const upgradeText = upgradeLinkEl.text();
   const costMatch = upgradeText.match(/Upgrade for\s+(\d+)/i);
   const upgradeCost = costMatch ? parseInt(costMatch[1], 10) : 0;
   const level = costToLevelMap[String(upgradeCost)] || null;
 
   const unlockedSkills = [];
-  $t0('ul.skills > li.on').each((_, el) => {
+  const mainSkillsList = $t0('ul.skills')
+    .filter((_, ul) => $t0(ul).find('li.soldier').length > 0)
+    .first();
+
+  const skillNodes = mainSkillsList.length
+    ? mainSkillsList.find('> li.on')
+    : $t0('ul.skills > li.on');
+
+  skillNodes.each((_, el) => {
     const onmouseover = $t0(el).attr('onmouseover') || '';
     const titleMatch = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
     if (!titleMatch) return;
 
-    const rawSkillName = titleMatch[1]
-      .replace(/&#39;|&rsquo;/g, "'")
-      .replace(/&quot;/g, '"')
-      .replace(/&amp;/g, '&')
-      .trim();
-
+    const rawSkillName = cleanHtmlEntities(titleMatch[1]);
     const matchedSkill = skillLookupMap.get(rawSkillName.toLowerCase());
+
     if (matchedSkill) {
       unlockedSkills.push(matchedSkill);
     } else {
@@ -139,6 +269,16 @@ function parseAccountFolder(accountId) {
 
   unlockedSkills.sort((a, b) => (a.id || 999) - (b.id || 999));
 
+  // Extract upgrade options from levelup0.html (if present) and t0.html
+  let availableUpgrades = [];
+  if (fs.existsSync(levelup0Path)) {
+    const levelupHtml = fs.readFileSync(levelup0Path, 'utf-8');
+    availableUpgrades = extractUpgradeChoicesFromHtml(levelupHtml);
+  }
+  if (availableUpgrades.length === 0) {
+    availableUpgrades = extractUpgradeChoicesFromHtml(t0Html);
+  }
+
   const aiConfig = {
     favouriteWeapon: getSelectedOptionText($t0, 'weapon'),
     favouriteTarget: getSelectedOptionText($t0, 'loc'),
@@ -147,22 +287,27 @@ function parseAccountFolder(accountId) {
     priorityTarget: getSelectedOptionText($t0, 'ttype')
   };
 
+  const canUpgrade =
+    (upgradeCost > 0 && credits >= upgradeCost) || availableUpgrades.length > 0;
+
   return {
     id: accountId,
     name: accountId,
     raidPhase,
     credits,
     power,
-    canUpgrade: upgradeCost > 0 && credits >= upgradeCost,
+    canUpgrade,
     firstSoldier: {
       slot: 0,
       name: soldierName,
       avatarUrl,
       level,
       upgradeCost,
+      levelupUrl,
+      upgradeRequested: availableUpgrades.length > 0,
       aiConfig,
       skills: unlockedSkills,
-      availableUpgrades: []
+      availableUpgrades
     }
   };
 }

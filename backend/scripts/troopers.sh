@@ -1,15 +1,65 @@
 #!/bin/bash
 
 # =========================================================================
-# SCRAPE & SAVE RAW HTML FUNCTIONS (FOR NODE.JS BACKEND PARSER)
+# SCRAPE, UPGRADE REQUEST & SAVE RAW HTML FUNCTIONS
 # =========================================================================
 function saveAccountHtml {
     local account_dir="$data_dir/$login_lower"
     mkdir -p "$account_dir"
 
     echo "  [Sync] Saving /hq and /t/0 HTML to $account_dir..."
-    $curl "$site/hq" > "$account_dir/hq.html"
-    $curl "$site/t/0" > "$account_dir/t0.html"
+    $curl "$site/hq" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/hq.html"
+    $curl "$site/t/0" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/t0.html"
+}
+
+function requestSoldierUpgrade {
+    local account_dir="$data_dir/$login_lower"
+    mkdir -p "$account_dir"
+
+    echo "  [Upgrade] Fetching /t/0 for $login_original to locate upgrade link..."
+    local t0_html=$($curl "$site/t/0")
+
+    # Find href="/t/0?levelup=..." or href="/levelup/0..."
+    local levelup_href=$(echo "$t0_html" | grep -Eo 'href="(/t/0\?levelup=[^"]+|/levelup/0[^"]*)"' | head -n 1 | sed -E 's/^href="|"$//g')
+
+    if [[ -n "$levelup_href" ]]; then
+        echo "  [Upgrade] Sending upgrade request to $site$levelup_href..."
+        $curl "$site$levelup_href" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/levelup0.html"
+    else
+        echo "  [Upgrade] No ?levelup= token on /t/0 (upgrade may already be pending). Checking /levelup/0..."
+        local lvl_page=$($curl "$site/levelup/0")
+        if [[ -n "$lvl_page" ]]; then
+            echo "$lvl_page" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/levelup0.html"
+        else
+            echo "$t0_html" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/levelup0.html"
+        fi
+    fi
+
+    # Refresh /t/0 and /hq after the upgrade request so credits and choices stay in sync
+    $curl "$site/t/0" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/t0.html"
+    $curl "$site/hq" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/hq.html"
+    echo "  [Upgrade] Saved upgrade options to $account_dir/levelup0.html and refreshed t0.html."
+}
+
+function selectSoldierUpgrade {
+    local target_href="$1"
+    local account_dir="$data_dir/$login_lower"
+    mkdir -p "$account_dir"
+
+    if [[ -z "$target_href" ]]; then
+        echo "error: Missing upgrade selection URL"
+        exit 1
+    fi
+
+    # Ensure leading slash
+    [[ "$target_href" != /* ]] && target_href="/$target_href"
+
+    echo "  [Upgrade] Selecting upgrade option via $site$target_href..."
+    $curl "$site$target_href" > /dev/null
+
+    # Remove old levelup0.html and save updated /t/0 and /hq
+    rm -f "$account_dir/levelup0.html"
+    saveAccountHtml
 }
 
 function getMoneyRatio {
@@ -22,9 +72,7 @@ function getMoneyRatio {
         t0_html=$($curl "$site/t/0")
     fi
 
-    # Extract credits from <div class="money">...</div>
     local money=$(echo "$t0_html" | awk '/class="money"/{flag=1; next} flag && /[0-9]+/{gsub(/[^0-9]/,""); print; exit}')
-    # Extract upgrade cost from "Upgrade for 316"
     local upgrade_cost=$(echo "$t0_html" | grep -Eo 'Upgrade for [0-9]+' | grep -Eo '[0-9]+' | head -n 1)
 
     [[ -z "$money" ]] && money=0
@@ -261,7 +309,34 @@ function printSummary {
     echo "========================================="
 }
 
+function lookupPasswordFromSecretCfg {
+    local target_user_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+    local secret_file=""
+
+    if [[ -f "$prefix/secret.cfg" ]]; then
+        secret_file="$prefix/secret.cfg"
+    elif [[ -f "$prefix/../config/secret.cfg" ]]; then
+        secret_file="$prefix/../config/secret.cfg"
+    fi
+
+    if [[ -n "$secret_file" && -f "$secret_file" ]]; then
+        while IFS= read -r entry; do
+            local entry_user=$(echo "${entry%%:*}" | tr '[:upper:]' '[:lower:]')
+            local entry_pass="${entry#*:}"
+            if [[ "$entry_user" == "$target_user_lower" ]]; then
+                echo "$entry_pass"
+                return 0
+            fi
+        done < <(grep -Eo '"[^"]+:[^"]+"' "$secret_file" | tr -d '"')
+    fi
+    return 1
+}
+
 function authenticate {
+    if [[ -z "$password" ]]; then
+        password="$(lookupPasswordFromSecretCfg "$login_original")"
+    fi
+
     if [[ -n "$password" ]]; then
         curl -L --silent --cookie-jar "$cookie_file" \
             --data-urlencode "login=$login_lower" \
@@ -291,7 +366,11 @@ function runSingleAccount {
     echo ">>> Processing account: $login_original"
     authenticate
 
-    if [[ "$scrape_only" == "true" ]]; then
+    if [[ "$request_upgrade" == "true" ]]; then
+        requestSoldierUpgrade
+    elif [[ -n "$select_upgrade_url" ]]; then
+        selectSoldierUpgrade "$select_upgrade_url"
+    elif [[ "$scrape_only" == "true" ]]; then
         saveAccountHtml
         if [[ "$report" != "never" ]]; then
             getMoneyRatio
@@ -323,34 +402,42 @@ ext="com"
 Another="Another"
 report="upgradable"
 scrape_only="false"
+request_upgrade="false"
+select_upgrade_url=""
 egrep="grep --extended-regexp --only-matching"
 
-## Dependency checks ##
-for command in 'grep' 'curl' 'awk' 'tr'; do
+for command in 'grep' 'curl' 'awk' 'tr' 'sed'; do
     if ! command -v "$command" > /dev/null; then
         echo "error: $0 needs $command to execute"
         exit 2
     fi
 done
 
-## Reading config files ##
 [[ -f "$prefix/troopers.cfg" ]] && source "$prefix/troopers.cfg"
 [[ -f "$prefix/$ext.culture" ]] && source "$prefix/$ext.culture"
 
-## Parse CLI flags ##
 args=()
-for arg in "$@"; do
-    case "$arg" in
+while [[ $# -gt 0 ]]; do
+    case "$1" in
         --scrape-only|-s|--sync)
             scrape_only="true"
+            shift
+            ;;
+        --request-upgrade|-u)
+            request_upgrade="true"
+            shift
+            ;;
+        --select-upgrade)
+            select_upgrade_url="$2"
+            shift 2
             ;;
         *)
-            args+=("$arg")
+            args+=("$1")
+            shift
             ;;
     esac
 done
 
-## Case 1: Single account passed via CLI (./troopers.sh [--scrape-only] user [pass] [friend]) ##
 if [[ ${#args[@]} -gt 0 ]]; then
     first_arg="${args[0]}"
     if [[ "$first_arg" == *:* && -z "${args[1]}" ]]; then
@@ -363,15 +450,15 @@ if [[ ${#args[@]} -gt 0 ]]; then
     exit 0
 fi
 
-## Case 2: No account CLI args -> Load "user1:pass1" "user2:pass2" from secret.cfg ##
-secret_file="$prefix/secret.cfg"
-if [[ ! -f "$secret_file" ]]; then
-    echo "Usage: $0 [--scrape-only] [<login> [password] [friend]]"
-    echo "Or create $secret_file with \"user1:pass1\" \"user2:pass2\""
+if [[ -f "$prefix/secret.cfg" ]]; then
+    secret_file="$prefix/secret.cfg"
+elif [[ -f "$prefix/../config/secret.cfg" ]]; then
+    secret_file="$prefix/../config/secret.cfg"
+else
+    echo "Usage: $0 [--scrape-only | --request-upgrade] [<login> [password] [friend]]"
     exit 1
 fi
 
-# Extract all "user:pass" entries from secret.cfg (supports both raw strings and bash arrays)
 mapfile -t account_entries < <(grep -Eo '"[^"]+:[^"]+"' "$secret_file" | tr -d '"')
 
 if [[ ${#account_entries[@]} -eq 0 ]]; then
