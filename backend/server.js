@@ -17,6 +17,30 @@ const HOST = '0.0.0.0';
 app.use(cors());
 app.use(express.json());
 
+// Automatically sanitize bash scripts if copy-paste introduced \vert{} or Windows CRLF (\r\n)
+function sanitizeBashScripts() {
+  const scriptsDir = path.join(__dirname, 'scripts');
+  const scriptFiles = ['troopers.sh', 'run_accounts.sh', 'troopers.cfg', 'com.culture', 'fr.culture'];
+
+  for (const fileName of scriptFiles) {
+    const filePath = path.join(scriptsDir, fileName);
+    if (fs.existsSync(filePath)) {
+      const original = fs.readFileSync(filePath, 'utf-8');
+      const cleaned = original
+        .replace(/\\vert\{\}/g, '|')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n');
+
+      if (cleaned !== original) {
+        fs.writeFileSync(filePath, cleaned, 'utf-8');
+        console.log(`[Sanitizer] Repaired copy-paste artifacts / line endings in ${fileName}`);
+      }
+    }
+  }
+}
+
+sanitizeBashScripts();
+
 // GET /api/accounts - Parses raw_html folders and returns all accounts
 app.get('/api/accounts', (req, res) => {
   try {
@@ -49,6 +73,7 @@ app.get('/api/account/:id', (req, res) => {
 
 // POST /api/accounts/sync - Runs bash scraper (--scrape-only) for all accounts
 app.post('/api/accounts/sync', (req, res) => {
+  sanitizeBashScripts();
   const scriptsDir = path.join(__dirname, 'scripts');
   const runAccountsScript = path.join(scriptsDir, 'run_accounts.sh');
 
@@ -89,6 +114,7 @@ app.post('/api/accounts/sync', (req, res) => {
 
 // POST /api/account/:id/request-upgrade - Sends upgrade request on /t/0 and parses upgrade options
 app.post('/api/account/:id/request-upgrade', (req, res) => {
+  sanitizeBashScripts();
   const accountId = req.params.id.toLowerCase();
   const scriptsDir = path.join(__dirname, 'scripts');
 
@@ -132,6 +158,7 @@ app.post('/api/account/:id/request-upgrade', (req, res) => {
 
 // POST /api/account/:id/select-upgrade - Selects a specific upgrade skill option
 app.post('/api/account/:id/select-upgrade', (req, res) => {
+  sanitizeBashScripts();
   const accountId = req.params.id.toLowerCase();
   const { selectUrl } = req.body || {};
 
@@ -178,7 +205,6 @@ app.use((req, res) => {
   });
 });
 
-// Explicitly create HTTP server and keep the Node.js event loop alive on Windows MINGW64
 const server = http.createServer(app);
 
 server.on('error', (err) => {
@@ -189,26 +215,12 @@ server.on('error', (err) => {
   }
 });
 
-server.on('close', () => {
-  console.log('HTTP server closed.');
-});
-
 server.listen(PORT, HOST, () => {
   console.log(`Mini Troopers Command Center API running on http://localhost:${PORT}`);
 });
 
 server.ref();
-
-// Keep-alive timer prevents Node v26 on Windows/MINGW64 from draining the event loop prematurely
 const keepAliveInterval = setInterval(() => {}, 1000 * 60 * 60);
-
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-});
-
-process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled Rejection:', reason);
-});
 
 process.on('SIGINT', () => {
   clearInterval(keepAliveInterval);

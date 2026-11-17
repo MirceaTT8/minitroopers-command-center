@@ -29,7 +29,10 @@ fi
 source "$secret_file"
 
 if [[ ${#accounts[@]} -eq 0 ]]; then
-    mapfile -t accounts < <(grep -Eo '"[^"]+:[^"]+"' "$secret_file" | tr -d '"')
+    mapfile -t raw_accounts < <(grep -Eo '"[^"]+:[^"]+"' "$secret_file")
+    for item in "${raw_accounts[@]}"; do
+        accounts+=("${item//\"/}")
+    done
 fi
 
 if [[ ${#accounts[@]} -eq 0 ]]; then
@@ -39,8 +42,9 @@ fi
 
 # 4. Execute troopers.sh for each account
 for entry in "${accounts[@]}"; do
-    user="${entry%%:*}"
-    pass="${entry#*:}"
+    clean_entry="${entry//\"/}"
+    user="${clean_entry%%:*}"
+    pass="${clean_entry#*:}"
 
     if [[ -n "$mode_flag" ]]; then
         "$prefix/troopers.sh" "$mode_flag" "$user" "$pass"
