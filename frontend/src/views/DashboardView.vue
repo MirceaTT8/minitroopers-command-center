@@ -54,6 +54,7 @@
         :isUpgrading="store.isAccountUpgrading(account.id)"
         @select="goToAccountDetail"
         @request-upgrade="handleRequestUpgrade"
+        @select-upgrade="handleSelectUpgrade"
       />
     </div>
   </div>
@@ -74,6 +75,10 @@ function goToAccountDetail(accountId) {
 
 async function handleRequestUpgrade(accountId) {
   await store.requestUpgradeForAccount(accountId)
+}
+
+async function handleSelectUpgrade({ accountId, selectUrl }) {
+  await store.chooseUpgradeForAccount(accountId, selectUrl)
 }
 
 onMounted(() => {

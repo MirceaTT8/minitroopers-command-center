@@ -8,37 +8,68 @@ function saveAccountHtml {
     mkdir -p "$account_dir"
 
     echo "  [Sync] Saving /hq and /t/0 HTML to $account_dir..."
-    $curl "$site/hq" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/hq.html"
-    $curl "$site/t/0" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/t0.html"
+    $curl "$site/hq" | sed "s|<head>|<head><base href=\"$site/\">\vert{}i" > "$account_dir/hq.html"
+
+    local raw_t0=$($curl "$site/t/0")
+    local formatted_t0=$(echo "$raw_t0" | sed "s|<head>|<head><base href=\"$site/\">|i")
+
+    echo "$formatted_t0" > "$account_dir/t0.html"
+
+    # If /t/0 is currently showing the pending levelup screen, save it to levelup0.html
+    # Otherwise save a backup of the full stats sheet to t0_stats.html and clear stale levelup0.html
+    if echo "$raw_t0" | grep -q 'class="levelup"'; then
+        echo "  [Sync] Account $login_original has a pending level-up choice on /t/0!"
+        echo "$formatted_t0" > "$account_dir/levelup0.html"
+    else
+        echo "$formatted_t0" > "$account_dir/t0_stats.html"
+        rm -f "$account_dir/levelup0.html"
+    fi
 }
 
 function requestSoldierUpgrade {
     local account_dir="$data_dir/$login_lower"
     mkdir -p "$account_dir"
 
-    echo "  [Upgrade] Fetching /t/0 for $login_original to locate upgrade link..."
+    echo "  [Upgrade] Fetching /t/0 for $login_original..."
     local t0_html=$($curl "$site/t/0")
+    local formatted_t0=$(echo "$t0_html" | sed "s|<head>|<head><base href=\"$site/\">|i")
 
-    # Find href="/t/0?levelup=..." or href="/levelup/0..."
-    local levelup_href=$(echo "$t0_html" | grep -Eo 'href="(/t/0\?levelup=[^"]+|/levelup/0[^"]*)"' | head -n 1 | sed -E 's/^href="|"$//g')
+    # Case 1: /t/0 is ALREADY on the <table class="levelup"> screen
+    if echo "$t0_html" | grep -q 'class="levelup"'; then
+        echo "  [Upgrade] $login_original is already on the level-up selection screen. Saving options..."
+        echo "$formatted_t0" > "$account_dir/levelup0.html"
+        echo "$formatted_t0" > "$account_dir/t0.html"
+        $curl "$site/hq" | sed "s|<head>|<head><base href=\"$site/\">\vert{}i" > "$account_dir/hq.html"
+        return 0
+    fi
+
+    # Case 2: /t/0 is on the normal stats sheet (<table class="tablesheet">).
+    # Save a backup of the stats sheet BEFORE triggering ?levelup=... so skills & AI config are preserved!
+    echo "$formatted_t0" > "$account_dir/t0.html"
+    echo "$formatted_t0" > "$account_dir/t0_stats.html"
+
+    local levelup_href=$(echo "$t0_html" \vert{} grep -Eo 'href="(/t/0\?levelup=[^"]+\vert{}/levelup/0[^"]*)"' \vert{} head -n 1 \vert{} sed -E 's/^href="\vert{}"$//g')
 
     if [[ -n "$levelup_href" ]]; then
         echo "  [Upgrade] Sending upgrade request to $site$levelup_href..."
-        $curl "$site$levelup_href" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/levelup0.html"
+        local lvl_response=$($curl "$site$levelup_href")
+        local formatted_lvl=$(echo "$lvl_response" | sed "s|<head>|<head><base href=\"$site/\">|i")
+        echo "$formatted_lvl" > "$account_dir/levelup0.html"
+
+        # If the response contains the levelup table, also update t0.html (t0_stats.html keeps the skills backup)
+        if echo "$lvl_response" | grep -q 'class="levelup"'; then
+            echo "$formatted_lvl" > "$account_dir/t0.html"
+        fi
     else
-        echo "  [Upgrade] No ?levelup= token on /t/0 (upgrade may already be pending). Checking /levelup/0..."
+        echo "  [Upgrade] No ?levelup= link found on /t/0. Checking /levelup/0..."
         local lvl_page=$($curl "$site/levelup/0")
-        if [[ -n "$lvl_page" ]]; then
-            echo "$lvl_page" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/levelup0.html"
-        else
-            echo "$t0_html" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/levelup0.html"
+        if echo "$lvl_page" | grep -q 'class="levelup"'; then
+            echo "$lvl_page" | sed "s|<head>|<head><base href=\"$site/\">\vert{}i" > "$account_dir/levelup0.html"
         fi
     fi
 
-    # Refresh /t/0 and /hq after the upgrade request so credits and choices stay in sync
-    $curl "$site/t/0" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/t0.html"
-    $curl "$site/hq" | sed "s|<head>|<head><base href=\"$site/\">|i" > "$account_dir/hq.html"
-    echo "  [Upgrade] Saved upgrade options to $account_dir/levelup0.html and refreshed t0.html."
+    $curl "$site/hq" | sed "s|<head>|<head><base href=\"$site/\">\vert{}i" > "$account_dir/hq.html"
+    echo "  [Upgrade] Upgrade options saved to $account_dir/levelup0.html."
 }
 
 function selectSoldierUpgrade {
@@ -51,13 +82,11 @@ function selectSoldierUpgrade {
         exit 1
     fi
 
-    # Ensure leading slash
     [[ "$target_href" != /* ]] && target_href="/$target_href"
 
-    echo "  [Upgrade] Selecting upgrade option via $site$target_href..."
+    echo "  [Upgrade] Selecting skill via $site$target_href..."
     $curl "$site$target_href" > /dev/null
 
-    # Remove old levelup0.html and save updated /t/0 and /hq
     rm -f "$account_dir/levelup0.html"
     saveAccountHtml
 }
@@ -66,7 +95,9 @@ function getMoneyRatio {
     local account_dir="$data_dir/$login_lower"
     local t0_html=""
 
-    if [[ -f "$account_dir/t0.html" ]]; then
+    if [[ -f "$account_dir/t0_stats.html" ]]; then
+        t0_html=$(cat "$account_dir/t0_stats.html")
+    elif [[ -f "$account_dir/t0.html" ]]; then
         t0_html=$(cat "$account_dir/t0.html")
     else
         t0_html=$($curl "$site/t/0")
@@ -78,7 +109,7 @@ function getMoneyRatio {
     [[ -z "$money" ]] && money=0
     [[ -z "$upgrade_cost" ]] && upgrade_cost=0
 
-    if [[ "$report" == "always" || ( "$report" == "upgradable" && "$money" -ge "$upgrade_cost" ) ]]; then
+    if [[ "$report" == "always" \vert{}\vert{} ( "$report" == "upgradable" && "$money" -ge "$upgrade_cost" ) ]]; then
         echo "$login_original's money for next upgrade : $money/$upgrade_cost"
     fi
 }
@@ -101,16 +132,16 @@ function mission {
         for i in {1..3}; do
             local hq_html=$($curl "$site/hq")
 
-            if ! echo "$hq_html" | grep -q "mission?t=$type"; then
+            if ! echo "$hq_html" \vert{} grep -q "mission?t=$type"; then
                 echo "  Mission ($type) - no more attempts available today."
                 break
             fi
 
-            echo -n "  Running mission ($type) - attempt $i/3... "
+            echo -n "  Running mission ($type) - attempt$i/3... "
             $curl "$site/b/mission?t=$type" > /dev/null
 
             local updated_hq=$($curl "$site/hq")
-            local last_badge=$(echo "$updated_hq" | grep "$tip_id" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
+            local last_badge=$(echo "$updated_hq" \vert{} grep "$tip_id" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
 
             if [[ "$last_badge" == "bwin_bg" ]]; then
                 echo "WON!"
@@ -180,7 +211,7 @@ function getFightKey {
     if [[ -n "$best_opp" ]]; then
         echo "$best_opp"
     else
-        echo "$opp_html" | $egrep --regexp='opp=[0-9]+' | head --lines=1
+        echo "$opp_html" \vert{} $egrep --regexp='opp=[0-9]+' | head --lines=1
     fi
 }
 

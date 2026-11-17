@@ -22,7 +22,7 @@
           isUpgrading
             ? 'Requesting /t/0 Upgrade...'
             : soldier.availableUpgrades?.length
-              ? 'Refresh Upgrade Options (/t/0)'
+              ? 'Refresh Pending Skill Choices (/t/0)'
               : `Request Upgrade on /t/0 (${soldier.upgradeCost} T)`
         }}
       </button>
@@ -38,13 +38,17 @@
     <div
       class="p-3 rounded-lg border mb-6 font-bold text-sm"
       :class="
-        canUpgrade
-          ? 'bg-green-950 border-green-500 text-green-300'
-          : 'bg-red-950 border-red-500 text-red-300'
+        soldier.availableUpgrades?.length
+          ? 'bg-amber-950 border-amber-400 text-amber-200'
+          : canUpgrade
+            ? 'bg-green-950 border-green-500 text-green-300'
+            : 'bg-red-950 border-red-500 text-red-300'
       "
     >
       <span v-if="soldier.availableUpgrades?.length">
-        [UPGRADE OPTIONS READY] {{ soldier.availableUpgrades.length }} skill choices available below for {{ soldier.name }}!
+        [LEVEL {{ soldier.level }} SKILL SELECTION PENDING] {{ soldier.name }} has advanced to Level
+        {{ soldier.level }}! Choose 1 of the {{ soldier.availableUpgrades.length }} skills below
+        (Current Credits: {{ account.credits }} T | Next Level Upgrade Cost: {{ soldier.upgradeCost }} T).
       </span>
       <span v-else-if="canUpgrade">
         [UPGRADE AVAILABLE] Credits: {{ account.credits }} T | Upgrade Cost:
@@ -58,7 +62,6 @@
       </span>
     </div>
 
-    <!-- Upgrade Options Box placed prominently when options are present or requested -->
     <div class="mb-6">
       <UpgradeChoicesBox
         :account="account"
@@ -123,6 +126,7 @@ async function handleSelectUpgrade(selectUrl) {
 }
 
 onMounted(async () => {
+  await store.loadAccounts()
   account.value = await store.getAccount(route.params.accountId)
 })
 </script>

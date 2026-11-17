@@ -2,7 +2,13 @@
   <div
     @click="$emit('select', account.id)"
     class="bg-slate-800 p-5 rounded-xl shadow-lg border cursor-pointer transition-all hover:scale-[1.01] flex flex-col justify-between"
-    :class="isReady || hasUpgradeOptions ? 'border-green-500' : 'border-slate-700'"
+    :class="
+      hasUpgradeOptions
+        ? 'border-amber-400'
+        : isReady
+          ? 'border-green-500'
+          : 'border-slate-700'
+    "
   >
     <div>
       <div class="flex justify-between items-center mb-3">
@@ -29,7 +35,7 @@
           </p>
           <p class="text-sm text-slate-400 mt-1">
             Credits: <span class="text-white font-bold">{{ account.credits }} T</span> |
-            Upgrade: <span class="text-white font-bold">{{ account.firstSoldier.upgradeCost }} T</span>
+            Next Cost: <span class="text-white font-bold">{{ account.firstSoldier.upgradeCost }} T</span>
           </p>
           <p class="text-xs text-slate-500 mt-1">
             Unlocked Skills:
@@ -45,16 +51,18 @@
           :disabled="isUpgrading"
           class="w-full py-2 px-3 rounded-lg font-bold text-xs transition-colors cursor-pointer border"
           :class="
-            isReady || hasUpgradeOptions
-              ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-400 text-white'
-              : 'bg-blue-700 hover:bg-blue-600 border-blue-500 text-white disabled:opacity-50'
+            hasUpgradeOptions
+              ? 'bg-amber-600 hover:bg-amber-500 border-amber-400 text-white'
+              : isReady
+                ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-400 text-white'
+                : 'bg-blue-700 hover:bg-blue-600 border-blue-500 text-white disabled:opacity-50'
           "
         >
           {{
             isUpgrading
               ? 'Requesting /t/0 Upgrade...'
               : hasUpgradeOptions
-                ? 'Refresh Upgrade Options (/t/0)'
+                ? 'Refresh Pending Skill Choices (/t/0)'
                 : `Request Upgrade on /t/0 (${account.firstSoldier.upgradeCost} T)`
           }}
         </button>
@@ -64,10 +72,10 @@
       <div
         v-if="hasUpgradeOptions"
         @click.stop
-        class="mt-3 p-3 bg-slate-900/90 rounded-lg border border-sky-500/60"
+        class="mt-3 p-3 bg-slate-900/95 rounded-lg border border-amber-400/80"
       >
-        <div class="text-[11px] font-bold text-sky-400 uppercase mb-2">
-          Available Upgrade Options ({{ account.firstSoldier.availableUpgrades.length }})
+        <div class="text-[11px] font-bold text-amber-300 uppercase mb-2">
+          Choose New Skill for {{ account.firstSoldier.name }} (Lvl {{ account.firstSoldier.level }})
         </div>
         <div class="space-y-2">
           <div
@@ -79,12 +87,23 @@
             <div class="flex items-center justify-between font-bold">
               <span>{{ opt.name }}</span>
               <span class="text-[10px] px-1.5 py-0.5 rounded bg-black/30">
-                {{ opt.type }} • #{{ opt.id }}
+                {{ opt.type }} • {{ opt.color }} • #{{ opt.id }}
               </span>
             </div>
-            <p class="text-[11px] mt-1 opacity-90 leading-snug">
+            <div class="text-[10px] font-mono opacity-75 mt-0.5">
+              key: {{ opt.key }}
+            </div>
+            <p class="text-[11px] mt-1 opacity-95 leading-snug">
               {{ opt.description }}
             </p>
+            <button
+              v-if="opt.selectUrl"
+              @click.stop="$emit('select-upgrade', { accountId: account.id, selectUrl: opt.selectUrl })"
+              :disabled="isUpgrading"
+              class="mt-2 w-full bg-black/40 hover:bg-black/60 border border-white/30 py-1.5 rounded text-[11px] font-bold cursor-pointer"
+            >
+              Teach {{ opt.name }}
+            </button>
           </div>
         </div>
       </div>
@@ -94,6 +113,7 @@
       <UpgradeBadge
         :credits="account.credits"
         :upgradeCost="account.firstSoldier.upgradeCost"
+        :pendingCount="account.firstSoldier.availableUpgrades?.length || 0"
       />
       <span class="text-xs font-bold text-sky-400">Inspect Soldier -&gt;</span>
     </div>
@@ -115,7 +135,7 @@ const props = defineProps({
   },
 })
 
-defineEmits(['select', 'request-upgrade'])
+defineEmits(['select', 'request-upgrade', 'select-upgrade'])
 
 const isReady = computed(
   () =>

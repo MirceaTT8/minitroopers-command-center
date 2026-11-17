@@ -30,8 +30,26 @@ const skillsList = Array.isArray(skillsDictionaryRaw?.skills)
           description: val.description ?? ''
         }));
 
+// Map Upgrade Cost -> Current Level (e.g. "181" -> 8, "316" -> 10)
 const costToLevelMap =
   upgradeCostTableRaw?.costToCurrentLevel || upgradeCostTableRaw || {};
+
+// Map Current Level -> Upgrade Cost (e.g. "6" -> 88, "8" -> 181)
+const levelToCostMap = {};
+for (const [costStr, lvlVal] of Object.entries(costToLevelMap)) {
+  const costNum = parseInt(costStr, 10);
+  const lvlNum = parseInt(lvlVal, 10);
+  if (!isNaN(costNum) && !isNaN(lvlNum)) {
+    levelToCostMap[String(lvlNum)] = costNum;
+  }
+}
+if (Array.isArray(upgradeCostTableRaw?.levels)) {
+  for (const row of upgradeCostTableRaw.levels) {
+    if (row.currentLevel && row.upgradeCost) {
+      levelToCostMap[String(row.currentLevel)] = row.upgradeCost;
+    }
+  }
+}
 
 const skillLookupMap = new Map();
 for (const skill of skillsList) {
@@ -59,12 +77,60 @@ for (const skill of skillsList) {
   }
 }
 
+// Register known in-game server spelling variations (such as "Comms. Officier" on trooperstest)
+const SERVER_NAME_ALIASES = {
+  'comms. officier': 'comms_officer',
+  'comms officier': 'comms_officer',
+  'comms officer': 'comms_officer',
+  'cold-blooded': 'cold_blooded',
+  'battle ready': 'battle_ready',
+  'sniper rifle': 'sniper',
+  'bazooka': 'bazooka_m1',
+  'back pack': 'rucksack',
+  'backpack': 'rucksack',
+  'walkie-talkie': 'talky_walky',
+  'anatomist': 'anatomy',
+  'sprint': 'sprinter',
+  'dodge': 'dodger'
+};
+
+for (const [aliasName, targetKey] of Object.entries(SERVER_NAME_ALIASES)) {
+  const targetSkill = skillLookupMap.get(targetKey);
+  if (targetSkill && !skillLookupMap.has(aliasName)) {
+    skillLookupMap.set(aliasName, targetSkill);
+  }
+}
+
 function cleanHtmlEntities(str) {
   return String(str || '')
     .replace(/&#39;|&rsquo;/g, "'")
     .replace(/&quot;/g, '"')
     .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
     .trim();
+}
+
+function findSkillInDictionary(rawName, fallbackDesc = '') {
+  const cleaned = cleanHtmlEntities(rawName);
+  if (!cleaned) return null;
+
+  const direct = skillLookupMap.get(cleaned.toLowerCase());
+  if (direct) return direct;
+
+  // Normalize punctuation/hyphens and retry
+  const normalizedKey = cleaned.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  if (skillLookupMap.has(normalizedKey)) {
+    return skillLookupMap.get(normalizedKey);
+  }
+
+  return {
+    id: 999,
+    key: normalizedKey || 'unknown_skill',
+    name: cleaned,
+    type: 'Unknown',
+    color: 'Gray',
+    description: cleanHtmlEntities(fallbackDesc) || 'Skill parsed from game server.'
+  };
 }
 
 function getSelectedOptionText($, selectName) {
@@ -84,130 +150,109 @@ function extractUpgradeChoicesFromHtml(htmlContent) {
   const choices = [];
   const seenKeys = new Set();
 
-  function addChoice(rawName, selectUrl = null) {
-    const cleaned = cleanHtmlEntities(rawName);
-    if (!cleaned) return;
-    const matched = skillLookupMap.get(cleaned.toLowerCase());
-    if (!matched) return;
-    if (seenKeys.has(matched.key)) return;
+  function pushChoice(rawName, selectUrl = null, rawDescription = '') {
+    const matched = findSkillInDictionary(rawName, rawDescription);
+    if (!matched || seenKeys.has(matched.key)) return;
 
     seenKeys.add(matched.key);
     choices.push({
-      ...matched,
+      id: matched.id,
+      key: matched.key,
+      name: matched.name,
+      type: matched.type,
+      color: matched.color,
+      description: matched.description || cleanHtmlEntities(rawDescription),
       selectUrl: selectUrl || null
     });
   }
 
-  // 1. Check any <ul class="skills"> that is NOT the main soldier skill grid (no li.soldier)
-  $('ul.skills').each((_, ul) => {
-    if ($(ul).find('li.soldier').length > 0) {
-      // Even inside main ul.skills, if an <li> wraps an <a href="..."> or has a levelup choice class, capture it
-      $(ul)
-        .find('li')
-        .each((__, li) => {
-          const linkHref =
-            $(li).find('a').attr('href') || $(li).attr('onclick') || '';
-          if (linkHref && !$(li).hasClass('soldier')) {
-            const onmouseover =
-              $(li).attr('onmouseover') ||
-              $(li).find('[onmouseover]').attr('onmouseover') ||
-              '';
-            const m = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
-            if (m) addChoice(m[1], $(li).find('a').attr('href'));
-          }
-        });
-      return;
+  // 1. Primary MiniTroopers <table class="levelup"> .box8 parser:
+  // <div class="box8" onclick="if(confirm('Confirm this action?')) document.location = '/levelup/0?skill=7'">
+  //   <div class="levelskill" style="background: url('/img/skills.png') -210px 0px"></div>
+  //   <h2>Saboteur</h2>
+  //   <div class="s">...</div>
+  // </div>
+  $('table.levelup .box8, div.box8').each((_, box) => {
+    const rawName = $(box).find('h2').first().text();
+    const rawDesc = $(box).find('div.s').first().text();
+    const onclickAttr = $(box).attr('onclick') || '';
+
+    let selectUrl = null;
+    const locMatch =
+      onclickAttr.match(/document\.location\s*=\s*['"]([^'"]+)['"]/i) ||
+      onclickAttr.match(/['"](\/levelup\/[^'"]+)['"]/i);
+    if (locMatch) {
+      selectUrl = locMatch[1];
+    } else {
+      selectUrl = $(box).find('a').attr('href') || null;
     }
 
-    $(ul)
-      .find('li')
-      .each((__, li) => {
-        const onmouseover =
-          $(li).attr('onmouseover') ||
-          $(li).find('[onmouseover]').attr('onmouseover') ||
-          '';
-        const m = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
-        const href =
-          $(li).find('a').attr('href') ||
-          $(li).closest('a').attr('href') ||
-          null;
-        if (m) {
-          addChoice(m[1], href);
-        }
-      });
-  });
-
-  // 2. Scan .sheetright, .levelup, .choices, and any links outside form#config and main ul.skills
-  $('.sheetright, .levelup, .choose, .choices')
-    .find('*')
-    .each((_, el) => {
-      if ($(el).closest('form#config').length > 0) return;
-
-      const onmouseover = $(el).attr('onmouseover') || '';
-      const tipMatch = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
-      const href =
-        $(el).attr('href') ||
-        $(el).find('a').first().attr('href') ||
-        $(el).closest('a').attr('href') ||
-        null;
-
-      if (tipMatch) {
-        addChoice(tipMatch[1], href);
-      }
-    });
-
-  // 3. Scan any <a> tags pointing to skill selection endpoints (/t/0?..., /levelup/0?...)
-  $('a[href]').each((_, a) => {
-    if ($(a).closest('form#config').length > 0) return;
-    if ($(a).closest('ul.skills').find('li.soldier').length > 0) return;
-
-    const href = $(a).attr('href') || '';
-    const onmouseover = $(a).attr('onmouseover') || '';
-    const tipMatch = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
-    if (tipMatch) {
-      addChoice(tipMatch[1], href);
-      return;
-    }
-
-    const linkText = cleanHtmlEntities($(a).text());
-    if (linkText && skillLookupMap.has(linkText.toLowerCase())) {
-      addChoice(linkText, href);
+    if (rawName) {
+      pushChoice(rawName, selectUrl, rawDesc);
     }
   });
 
-  // 4. Scan any standalone [onmouseover] outside the main soldier ul.skills grid and form#config
-  $('[onmouseover]').each((_, el) => {
-    if ($(el).closest('form#config').length > 0) return;
-    if ($(el).closest('ul.skills').find('li.soldier').length > 0) return;
-
-    const onmouseover = $(el).attr('onmouseover') || '';
-    const tipMatch = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
-    if (tipMatch) {
-      const href =
-        $(el).attr('href') ||
-        $(el).find('a').first().attr('href') ||
-        $(el).closest('a').attr('href') ||
-        null;
-      addChoice(tipMatch[1], href);
+  // 2. Fallback: Check any <a href="/levelup/0?skill=..."> links if present
+  $('a[href*="/levelup/"]').each((_, a) => {
+    const href = $(a).attr('href') || null;
+    const rawName =
+      $(a).find('h2').text() ||
+      $(a).text();
+    if (rawName) {
+      pushChoice(rawName, href);
     }
   });
 
   return choices;
 }
 
+function readPreviousCachedAccount(accountId) {
+  if (!fs.existsSync(CACHE_FILE)) return null;
+  try {
+    const list = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8'));
+    if (!Array.isArray(list)) return null;
+    return (
+      list.find((item) => item?.id?.toLowerCase() === accountId.toLowerCase()) ||
+      null
+    );
+  } catch (_) {
+    return null;
+  }
+}
+
 function parseAccountFolder(accountId) {
   const accountDir = path.join(RAW_HTML_DIR, accountId);
   const t0Path = path.join(accountDir, 't0.html');
+  const t0StatsBackupPath = path.join(accountDir, 't0_stats.html');
   const hqPath = path.join(accountDir, 'hq.html');
   const levelup0Path = path.join(accountDir, 'levelup0.html');
 
-  if (!fs.existsSync(t0Path)) {
+  if (!fs.existsSync(t0Path) && !fs.existsSync(levelup0Path)) {
     return null;
   }
 
-  const t0Html = fs.readFileSync(t0Path, 'utf-8');
-  const $t0 = cheerio.load(t0Html);
+  const primaryT0Html = fs.existsSync(t0Path)
+    ? fs.readFileSync(t0Path, 'utf-8')
+    : fs.readFileSync(levelup0Path, 'utf-8');
 
+  // If t0.html is currently the <table class="levelup"> screen, read skills/AI config from t0_stats.html if available
+  const statsSheetHtml =
+    !primaryT0Html.includes('class="tablesheet"') &&
+    fs.existsSync(t0StatsBackupPath)
+      ? fs.readFileSync(t0StatsBackupPath, 'utf-8')
+      : primaryT0Html;
+
+  const levelupHtml = fs.existsSync(levelup0Path)
+    ? fs.readFileSync(levelup0Path, 'utf-8')
+    : primaryT0Html.includes('class="levelup"')
+      ? primaryT0Html
+      : '';
+
+  const $primary = cheerio.load(primaryT0Html);
+  const $stats = cheerio.load(statsSheetHtml);
+  const previousCache = readPreviousCachedAccount(accountId);
+
+  // 1. Parse Raid Phase from hq.html
   let raidPhase = null;
   if (fs.existsSync(hqPath)) {
     const hqHtml = fs.readFileSync(hqPath, 'utf-8');
@@ -217,75 +262,133 @@ function parseAccountFolder(accountId) {
     }
   }
 
-  const creditsText = $t0('div.money').first().text().replace(/[^0-9]/g, '');
-  const powerText = $t0('div.power').first().text().replace(/[^0-9]/g, '');
+  // 2. Parse Credits & Army Power (present in .home on both /t/0 and /levelup/0)
+  const creditsText =
+    $primary('div.money').first().text().replace(/[^0-9]/g, '') ||
+    $stats('div.money').first().text().replace(/[^0-9]/g, '');
+  const powerText =
+    $primary('div.power').first().text().replace(/[^0-9]/g, '') ||
+    $stats('div.power').first().text().replace(/[^0-9]/g, '');
+
   const credits = creditsText ? parseInt(creditsText, 10) : 0;
   const power = powerText ? parseInt(powerText, 10) : 0;
 
-  const soldierImg = $t0('ul.skills li.soldier img').first();
-  const soldierName =
-    $t0('input#name').attr('value') ||
-    soldierImg.attr('alt') ||
-    accountId;
-  const avatarUrl = soldierImg.attr('src') || null;
+  // 3. Parse Soldier Name & Avatar URL from stats sheet, levelup table, or left My Troopers panel (#swf_tr_view)
+  const soldierImg =
+    $stats('ul.skills li.soldier img').first().length > 0
+      ? $stats('ul.skills li.soldier img').first()
+      : $primary('table.levelup span.tcard img').first().length > 0
+        ? $primary('table.levelup span.tcard img').first()
+        : $primary('#swf_tr_view a.tcard[href="/t/0"] img').first();
 
-  const upgradeLinkEl = $t0('.sheetright a[href*="levelup"]').first();
+  let advancedMatch = null;
+  if (levelupHtml) {
+    advancedMatch = levelupHtml.match(
+      /([A-Za-z0-9_.-]+)\s+has\s+advanced\s+to\s+level\s+(\d+)/i
+    );
+  }
+
+  const soldierName =
+    $stats('input#name').attr('value') ||
+    soldierImg.attr('alt') ||
+    (advancedMatch ? advancedMatch[1] : null) ||
+    previousCache?.firstSoldier?.name ||
+    accountId;
+
+  const avatarUrl =
+    soldierImg.attr('src') ||
+    previousCache?.firstSoldier?.avatarUrl ||
+    null;
+
+  // 4. Parse Upgrade Cost & Soldier Level
+  const upgradeLinkEl = $stats('.sheetright a[href*="levelup"]').first();
   const levelupUrl = upgradeLinkEl.attr('href') || null;
   const upgradeText = upgradeLinkEl.text();
   const costMatch = upgradeText.match(/Upgrade for\s+(\d+)/i);
-  const upgradeCost = costMatch ? parseInt(costMatch[1], 10) : 0;
-  const level = costToLevelMap[String(upgradeCost)] || null;
 
+  let upgradeCost = costMatch ? parseInt(costMatch[1], 10) : 0;
+  let level = upgradeCost ? costToLevelMap[String(upgradeCost)] || null : null;
+
+  // If the soldier is on the <table class="levelup"> screen ("Joeralund has advanced to level 6!"),
+  // set their level from that message and look up the next level's upgradeCost from levelToCostMap!
+  if (advancedMatch) {
+    const advancedLevel = parseInt(advancedMatch[2], 10);
+    if (!isNaN(advancedLevel)) {
+      level = advancedLevel;
+      if (levelToCostMap[String(advancedLevel)]) {
+        upgradeCost = levelToCostMap[String(advancedLevel)];
+      }
+    }
+  }
+
+  if (!level && previousCache?.firstSoldier?.level) {
+    level = previousCache.firstSoldier.level;
+  }
+  if (!upgradeCost && level && levelToCostMap[String(level)]) {
+    upgradeCost = levelToCostMap[String(level)];
+  }
+
+  // 5. Parse Unlocked Skills from stats sheet (or preserve previous cache if currently on levelup screen)
   const unlockedSkills = [];
-  const mainSkillsList = $t0('ul.skills')
-    .filter((_, ul) => $t0(ul).find('li.soldier').length > 0)
+  const mainSkillsList = $stats('ul.skills')
+    .filter((_, ul) => $stats(ul).find('li.soldier').length > 0)
     .first();
 
   const skillNodes = mainSkillsList.length
     ? mainSkillsList.find('> li.on')
-    : $t0('ul.skills > li.on');
+    : $stats('ul.skills > li.on');
 
   skillNodes.each((_, el) => {
-    const onmouseover = $t0(el).attr('onmouseover') || '';
+    const onmouseover = $stats(el).attr('onmouseover') || '';
     const titleMatch = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
     if (!titleMatch) return;
 
-    const rawSkillName = cleanHtmlEntities(titleMatch[1]);
-    const matchedSkill = skillLookupMap.get(rawSkillName.toLowerCase());
-
+    const matchedSkill = findSkillInDictionary(titleMatch[1]);
     if (matchedSkill) {
-      unlockedSkills.push(matchedSkill);
-    } else {
       unlockedSkills.push({
-        id: 999,
-        key: rawSkillName.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
-        name: rawSkillName,
-        type: 'Unknown',
-        color: 'Gray',
-        description: 'Unmapped skill extracted from trooper sheet.'
+        id: matchedSkill.id,
+        key: matchedSkill.key,
+        name: matchedSkill.name,
+        type: matchedSkill.type,
+        color: matchedSkill.color,
+        description: matchedSkill.description
       });
     }
   });
 
+  if (
+    unlockedSkills.length === 0 &&
+    Array.isArray(previousCache?.firstSoldier?.skills) &&
+    previousCache.firstSoldier.skills.length > 0
+  ) {
+    unlockedSkills.push(...previousCache.firstSoldier.skills);
+  }
+
   unlockedSkills.sort((a, b) => (a.id || 999) - (b.id || 999));
 
-  // Extract upgrade options from levelup0.html (if present) and t0.html
-  let availableUpgrades = [];
-  if (fs.existsSync(levelup0Path)) {
-    const levelupHtml = fs.readFileSync(levelup0Path, 'utf-8');
-    availableUpgrades = extractUpgradeChoicesFromHtml(levelupHtml);
-  }
+  // 6. Parse Available Upgrade Choices (.box8 inside levelup0.html or t0.html)
+  let availableUpgrades = extractUpgradeChoicesFromHtml(levelupHtml);
   if (availableUpgrades.length === 0) {
-    availableUpgrades = extractUpgradeChoicesFromHtml(t0Html);
+    availableUpgrades = extractUpgradeChoicesFromHtml(primaryT0Html);
   }
 
-  const aiConfig = {
-    favouriteWeapon: getSelectedOptionText($t0, 'weapon'),
-    favouriteTarget: getSelectedOptionText($t0, 'loc'),
-    preferredVictim: getSelectedOptionText($t0, 'target'),
-    fightingStyle: getSelectedOptionText($t0, 'move'),
-    priorityTarget: getSelectedOptionText($t0, 'ttype')
-  };
+  // 7. Parse the 5 AI Config Dropdowns (or preserve previous cache if on levelup screen)
+  const hasConfigForm = $stats('form#config').length > 0;
+  const aiConfig = hasConfigForm
+    ? {
+        favouriteWeapon: getSelectedOptionText($stats, 'weapon'),
+        favouriteTarget: getSelectedOptionText($stats, 'loc'),
+        preferredVictim: getSelectedOptionText($stats, 'target'),
+        fightingStyle: getSelectedOptionText($stats, 'move'),
+        priorityTarget: getSelectedOptionText($stats, 'ttype')
+      }
+    : previousCache?.firstSoldier?.aiConfig || {
+        favouriteWeapon: 'Pending Skill Choice',
+        favouriteTarget: 'Pending Skill Choice',
+        preferredVictim: 'Pending Skill Choice',
+        fightingStyle: 'Pending Skill Choice',
+        priorityTarget: 'Pending Skill Choice'
+      };
 
   const canUpgrade =
     (upgradeCost > 0 && credits >= upgradeCost) || availableUpgrades.length > 0;

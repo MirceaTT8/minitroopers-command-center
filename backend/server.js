@@ -1,3 +1,4 @@
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -10,7 +11,8 @@ const {
 } = require('./parsers/htmlParser');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = '0.0.0.0';
 
 app.use(cors());
 app.use(express.json());
@@ -128,7 +130,7 @@ app.post('/api/account/:id/request-upgrade', (req, res) => {
   );
 });
 
-// POST /api/account/:id/select-upgrade - Selects a specific upgrade skill option if selectUrl is available
+// POST /api/account/:id/select-upgrade - Selects a specific upgrade skill option
 app.post('/api/account/:id/select-upgrade', (req, res) => {
   const accountId = req.params.id.toLowerCase();
   const { selectUrl } = req.body || {};
@@ -169,6 +171,48 @@ app.post('/api/account/:id/select-upgrade', (req, res) => {
   );
 });
 
-app.listen(PORT, () => {
+// JSON 404 Catch-All so Express never returns <!DOCTYPE html>
+app.use((req, res) => {
+  res.status(404).json({
+    error: `API route not found: ${req.method} ${req.originalUrl}`
+  });
+});
+
+// Explicitly create HTTP server and keep the Node.js event loop alive on Windows MINGW64
+const server = http.createServer(app);
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Close the other process or change PORT.`);
+  } else {
+    console.error('Server error:', err);
+  }
+});
+
+server.on('close', () => {
+  console.log('HTTP server closed.');
+});
+
+server.listen(PORT, HOST, () => {
   console.log(`Mini Troopers Command Center API running on http://localhost:${PORT}`);
+});
+
+server.ref();
+
+// Keep-alive timer prevents Node v26 on Windows/MINGW64 from draining the event loop prematurely
+const keepAliveInterval = setInterval(() => {}, 1000 * 60 * 60);
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
+
+process.on('SIGINT', () => {
+  clearInterval(keepAliveInterval);
+  server.close(() => {
+    process.exit(0);
+  });
 });
