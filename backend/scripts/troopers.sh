@@ -308,6 +308,14 @@ function authenticate {
     fi
 }
 
+# Saves /hq and /t/0 HTML snapshots so the Node.js backend can parse stats, skills & upgrades
+function exportHtmlForBackend {
+    local out_dir="$prefix/../data/raw_html"
+    mkdir -p "$out_dir"
+    $curl "$site/hq" > "$out_dir/${login_lower}_hq.html"
+    $curl "$site/t/0" > "$out_dir/${login_lower}_t0.html"
+}
+
 function cleanup {
     rm --force "$cookie_file"
 }
@@ -328,13 +336,14 @@ report="upgradable"
 
 ## Reading CLI ##
 if [[ -z "$1" ]]; then
-    echo "Usage: $0 <login> [password] [friend]"
+    echo "Usage: $0 <login> [password] [friend] [--sync-only]"
     exit 1
 fi
 
 login_original="$1"
 password="$2"
 [[ -n "$3" ]] && friend="$3"
+mode_flag="$4"
 
 # Force login to lowercase for URLs and authentication
 login_lower=$(echo "$login_original" | tr '[:upper:]' '[:lower:]')
@@ -356,18 +365,21 @@ done
 # 0. Authenticate
 authenticate
 
-# 1. Execute Battles
-if [[ -z "$friend" ]]; then
-    fightRandom
-else
-    fightFriend "$friend"
+# Skip Battles, Missions, and Raids if called with --sync-only from the UI
+if [[ "$mode_flag" != "--sync-only" ]]; then
+    # 1. Execute Battles
+    if [[ -z "$friend" ]]; then
+        fightRandom
+    else
+        fightFriend "$friend"
+    fi
+
+    # 2. Execute Missions
+    mission
+
+    # 3. Execute Raids
+    raid
 fi
-
-# 2. Execute Missions
-mission
-
-# 3. Execute Raids
-raid
 
 # 4. Print Final Summary & Upgrade Money Ratio
 printSummary
@@ -376,5 +388,8 @@ if [[ "$report" != "never" ]]; then
     getMoneyRatio
 fi
 
-echo "Finished running battles, missions, and raids!"
+# 5. Export HTML snapshots for the Node.js API
+exportHtmlForBackend
+
+echo "Finished running script for $login_original!"
 exit 0
