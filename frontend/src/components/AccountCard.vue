@@ -1,6 +1,54 @@
+<template>
+  <div
+    @click="$emit('select', account.id)"
+    class="bg-slate-800 p-5 rounded-xl shadow-lg border cursor-pointer transition-all hover:scale-[1.01]"
+    :class="isReady ? 'border-green-500' : 'border-slate-700'"
+  >
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="text-xl font-bold text-yellow-400">{{ account.name }}</h2>
+      <div class="flex items-center gap-2 text-xs text-slate-400">
+        <span>Power: <strong class="text-white">{{ account.power }}</strong></span>
+        <span v-if="account.raidPhase">• Raid Phase {{ account.raidPhase }}</span>
+      </div>
+    </div>
+
+    <div class="p-4 bg-slate-900 rounded-lg border border-slate-700 flex items-center gap-4">
+      <img
+        v-if="account.firstSoldier.avatarUrl"
+        :src="account.firstSoldier.avatarUrl"
+        :alt="account.firstSoldier.name"
+        class="w-14 h-14 rounded bg-slate-800 border border-slate-600 shrink-0"
+      />
+      <div class="min-w-0">
+        <p class="font-semibold text-slate-300 truncate">
+          1st Soldier:
+          <span class="text-white">
+            {{ account.firstSoldier.name }} (Lvl {{ account.firstSoldier.level ?? '?' }})
+          </span>
+        </p>
+        <p class="text-sm text-slate-400 mt-1">
+          Credits: <span class="text-white font-bold">{{ account.credits }} T</span> |
+          Upgrade: <span class="text-white font-bold">{{ account.firstSoldier.upgradeCost }} T</span>
+        </p>
+        <p class="text-xs text-slate-500 mt-1">
+          Unlocked Skills:
+          <span class="text-slate-300 font-semibold">{{ account.firstSoldier.skills.length }}</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-4 flex items-center justify-between">
+      <UpgradeBadge
+        :credits="account.credits"
+        :upgradeCost="account.firstSoldier.upgradeCost"
+      />
+      <span class="text-xs font-bold text-sky-400">Inspect Soldier -&gt;</span>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import UpgradeBadge from './UpgradeBadge.vue'
 
 const props = defineProps({
@@ -10,67 +58,11 @@ const props = defineProps({
   },
 })
 
-const router = useRouter()
-const canUpgrade = computed(() => props.account.credits >= props.account.firstSoldier.upgradeCost)
+defineEmits(['select'])
 
-function openAccountDetail() {
-  router.push({ name: 'soldier-detail', params: { id: props.account.id } })
-}
+const isReady = computed(
+  () =>
+    props.account.firstSoldier.upgradeCost > 0 &&
+    props.account.credits >= props.account.firstSoldier.upgradeCost
+)
 </script>
-
-<template>
-  <div
-    @click="openAccountDetail"
-    class="bg-slate-900 p-5 rounded-xl shadow-lg border-2 cursor-pointer transition-all hover:-translate-y-0.5 flex flex-col justify-between"
-    :class="
-      canUpgrade
-        ? 'border-green-500/80 hover:border-green-400'
-        : 'border-slate-800 hover:border-slate-700'
-    "
-  >
-    <div>
-      <!-- Top Row: Account Name & Raid Phase -->
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-extrabold text-yellow-400">Account: {{ account.name }}</h2>
-        <span class="text-xs font-semibold text-slate-400">
-          Raid Phase {{ account.raidPhase }}
-        </span>
-      </div>
-
-      <!-- First Soldier Box -->
-      <div class="p-3.5 bg-slate-950 rounded-lg border border-slate-800 mb-4">
-        <div class="flex items-center justify-between">
-          <p class="text-sm font-bold text-white">
-            1st Soldier: {{ account.firstSoldier.name }} (Lvl {{ account.firstSoldier.level }})
-          </p>
-          <span class="text-[11px] text-sky-400 font-semibold">
-            {{ account.firstSoldier.archetype }}
-          </span>
-        </div>
-        <p class="text-xs text-slate-300 mt-1.5">
-          Credits: <span class="font-bold text-white">{{ account.credits }} T</span>
-          <span class="mx-2 text-slate-600">|</span>
-          Upgrade Cost:
-          <span class="font-bold text-white">{{ account.firstSoldier.upgradeCost }} T</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- Bottom Row: Status Pill & Inspect Button -->
-    <div class="flex items-center justify-between gap-2 pt-1">
-      <UpgradeBadge :credits="account.credits" :upgradeCost="account.firstSoldier.upgradeCost" />
-
-      <button
-        type="button"
-        class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer"
-        :class="
-          canUpgrade
-            ? 'bg-blue-600 hover:bg-blue-500 text-white'
-            : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
-        "
-      >
-        {{ canUpgrade ? 'Inspect & Upgrade ->' : 'Inspect Stats ->' }}
-      </button>
-    </div>
-  </div>
-</template>

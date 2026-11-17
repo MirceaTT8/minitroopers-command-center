@@ -1,232 +1,216 @@
-// parsers/htmlParser.js
+const fs = require('fs');
+const path = require('path');
 const cheerio = require('cheerio');
-const skillsDictionary = require('../config/skillsDictionary.json');
 
-/**
- * Decodes the Base64 JSON embedded in https://data.trooperstest.gued.es/card/<base64>.svg
- */
-function decodeCardSvgPayload(imgSrc) {
-  try {
-    if (!imgSrc || !imgSrc.includes('/card/')) return null;
-    const base64Part = imgSrc.split('/card/')[1].replace('.svg', '');
-    if (base64Part === 'add') return null;
-    const jsonStr = Buffer.from(base64Part, 'base64url').toString('utf8');
-    return JSON.parse(jsonStr);
-  } catch {
+const CONFIG_DIR = path.join(__dirname, '..', 'config');
+const DATA_DIR = path.join(__dirname, '..', 'data');
+const RAW_HTML_DIR = path.join(DATA_DIR, 'raw_html');
+const CACHE_FILE = path.join(DATA_DIR, 'accountsCache.json');
+
+const skillsDictionaryRaw = JSON.parse(
+  fs.readFileSync(path.join(CONFIG_DIR, 'skillsDictionary.json'), 'utf-8')
+);
+const upgradeCostTableRaw = JSON.parse(
+  fs.readFileSync(path.join(CONFIG_DIR, 'upgradeCostTable.json'), 'utf-8')
+);
+
+// Normalize skills list whether skillsDictionary.json is { skills: [...] }, [...], or { key: {...} }
+const skillsList = Array.isArray(skillsDictionaryRaw?.skills)
+  ? skillsDictionaryRaw.skills
+  : Array.isArray(skillsDictionaryRaw)
+    ? skillsDictionaryRaw
+    : Object.entries(skillsDictionaryRaw || {})
+        .filter(([key, val]) => key !== 'meta' && val && typeof val === 'object')
+        .map(([key, val], index) => ({
+          id: val.id ?? index + 1,
+          key: val.key ?? key.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+          name: val.name ?? key,
+          aliases: val.aliases ?? [],
+          type: val.type ?? 'Unknown',
+          color: val.color ?? 'Gray',
+          description: val.description ?? ''
+        }));
+
+// Normalize upgradeCostTable whether nested under costToCurrentLevel or flat
+const costToLevelMap =
+  upgradeCostTableRaw?.costToCurrentLevel || upgradeCostTableRaw || {};
+
+const skillLookupMap = new Map();
+for (const skill of skillsList) {
+  if (!skill || !skill.name) continue;
+
+  const mappedSkill = {
+    id: skill.id ?? 999,
+    key: skill.key ?? skill.name.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+    name: skill.name,
+    type: skill.type ?? 'Unknown',
+    color: skill.color ?? 'Gray',
+    description: skill.description ?? ''
+  };
+
+  skillLookupMap.set(skill.name.toLowerCase().trim(), mappedSkill);
+
+  if (skill.key) {
+    skillLookupMap.set(String(skill.key).toLowerCase().trim(), mappedSkill);
+  }
+
+  if (Array.isArray(skill.aliases)) {
+    for (const alias of skill.aliases) {
+      skillLookupMap.set(String(alias).toLowerCase().trim(), mappedSkill);
+    }
+  }
+}
+
+function getSelectedOptionText($, selectName) {
+  const select = $(`form#config select[name="${selectName}"]`);
+  if (!select.length) return 'Unknown';
+
+  const selected = select.find('option[selected]');
+  if (selected.length) {
+    return selected.first().text().trim();
+  }
+  return select.find('option').first().text().trim() || 'Unknown';
+}
+
+function parseAccountFolder(accountId) {
+  const accountDir = path.join(RAW_HTML_DIR, accountId);
+  const t0Path = path.join(accountDir, 't0.html');
+  const hqPath = path.join(accountDir, 'hq.html');
+
+  if (!fs.existsSync(t0Path)) {
     return null;
   }
-}
 
-/**
- * Normalizes a skill name and attaches Type, Color, and Sort Order
- */
-function classifySkill(skillName) {
-  const cleanName = (skillName || '').trim();
-  const meta = skillsDictionary[cleanName] || {
-    type: 'Passive',
-    color: 'Green',
-    sortOrder: 4,
-  };
-  return {
-    name: cleanName,
-    type: meta.type,
-    color: meta.color,
-    sortOrder: meta.sortOrder,
-  };
-}
+  const t0Html = fs.readFileSync(t0Path, 'utf-8');
+  const $t0 = cheerio.load(t0Html);
 
-/**
- * Parses /hq HTML for Credits, Army Power, Raid Phase, and Trooper Roster cards
- */
-function parseHqHtml(hqHtml) {
-  const $ = cheerio.load(hqHtml || '');
+  let raidPhase = null;
+  if (fs.existsSync(hqPath)) {
+    const hqHtml = fs.readFileSync(hqPath, 'utf-8');
+    const raidMatch = hqHtml.match(/Raid Phase\s+(\d+)/i);
+    if (raidMatch) {
+      raidPhase = parseInt(raidMatch[1], 10);
+    }
+  }
 
-  const creditsText = $('.money').first().text().replace(/\D/g, '');
-  const powerText = $('.power').first().text().replace(/\D/g, '');
-
+  const creditsText = $t0('div.money').first().text().replace(/[^0-9]/g, '');
+  const powerText = $t0('div.power').first().text().replace(/[^0-9]/g, '');
   const credits = creditsText ? parseInt(creditsText, 10) : 0;
-  const armyPower = powerText ? parseInt(powerText, 10) : 0;
+  const power = powerText ? parseInt(powerText, 10) : 0;
 
-  // Extract Raid Phase from <h1 class="hbox">Raid Phase X</h1>
-  let raidPhase = 1;
-  $('h1.hbox').each((_, el) => {
-    const text = $(el).text();
-    const match = text.match(/Raid Phase\s+(\d+)/i);
-    if (match) {
-      raidPhase = parseInt(match[1], 10);
+  const soldierImg = $t0('ul.skills li.soldier img').first();
+  const soldierName =
+    $t0('input#name').attr('value') ||
+    soldierImg.attr('alt') ||
+    accountId;
+  const avatarUrl = soldierImg.attr('src') || null;
+
+  const upgradeText = $t0('.sheetright a[href*="levelup"]').first().text();
+  const costMatch = upgradeText.match(/Upgrade for\s+(\d+)/i);
+  const upgradeCost = costMatch ? parseInt(costMatch[1], 10) : 0;
+  const level = costToLevelMap[String(upgradeCost)] || null;
+
+  const unlockedSkills = [];
+  $t0('ul.skills > li.on').each((_, el) => {
+    const onmouseover = $t0(el).attr('onmouseover') || '';
+    const titleMatch = onmouseover.match(/<h1>([^<]+)<\/h1>/i);
+    if (!titleMatch) return;
+
+    const rawSkillName = titleMatch[1]
+      .replace(/&#39;|&rsquo;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')
+      .trim();
+
+    const matchedSkill = skillLookupMap.get(rawSkillName.toLowerCase());
+    if (matchedSkill) {
+      unlockedSkills.push(matchedSkill);
+    } else {
+      unlockedSkills.push({
+        id: 999,
+        key: rawSkillName.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+        name: rawSkillName,
+        type: 'Unknown',
+        color: 'Gray',
+        description: 'Unmapped skill extracted from trooper sheet.'
+      });
     }
   });
 
-  // Extract First Soldier card from /hq (#swf_tr_view a.tcard[href="/t/0"])
-  const firstCardImg = $('a.tcard[href="/t/0"] img').first();
-  const cardAltName = firstCardImg.attr('alt') || 'Trooper #0';
-  const cardPayload = decodeCardSvgPayload(firstCardImg.attr('src'));
+  unlockedSkills.sort((a, b) => (a.id || 999) - (b.id || 999));
 
-  // Level is 1 + number of level-up choices in cardPayload.c
-  const inferredLevel = cardPayload && Array.isArray(cardPayload.c) ? cardPayload.c.length + 1 : 1;
-
-  return {
-    credits,
-    armyPower,
-    raidPhase,
-    firstSoldierFromHq: {
-      name: cardPayload?.n || cardAltName,
-      level: inferredLevel,
-      cardPayload,
-    },
-  };
-}
-
-/**
- * Parses /t/0 HTML for First Soldier stats, Upgrade Cost, AI dropdowns, Skills, or Level-Up Choices
- */
-function parseFirstSoldierHtml(t0Html, fallbackHqData = {}) {
-  const $ = cheerio.load(t0Html || '');
-  const pageTitle = $('title').text() || '';
-
-  // 1. Credits & Power fallback if present on /t/0
-  const creditsText = $('.money').first().text().replace(/\D/g, '');
-  const powerText = $('.power').first().text().replace(/\D/g, '');
-  const credits = creditsText ? parseInt(creditsText, 10) : (fallbackHqData.credits ?? 0);
-  const armyPower = powerText ? parseInt(powerText, 10) : (fallbackHqData.armyPower ?? 0);
-
-  // 2. Soldier Name (from "<Name>'s stats sheet" or "<Name> has advanced to level X!")
-  let soldierName = fallbackHqData.firstSoldierFromHq?.name || 'Commander';
-  const headerText = $('h1, .hbox, title').text();
-  const sheetMatch = headerText.match(/([A-Za-z0-9_.-]+)['’]s stats sheet/i);
-  const advanceMatch = $('body').text().match(/([A-Za-z0-9_.-]+)\s+has advanced to level\s+(\d+)/i);
-
-  if (sheetMatch) soldierName = sheetMatch[1];
-  else if (advanceMatch) soldierName = advanceMatch[1];
-
-  // 3. Soldier Level
-  let level = fallbackHqData.firstSoldierFromHq?.level || 1;
-  if (advanceMatch) {
-    level = parseInt(advanceMatch[2], 10);
-  } else {
-    const levelTextMatch = $('body').text().match(/level\s+(\d+)/i);
-    if (levelTextMatch) level = parseInt(levelTextMatch[1], 10);
-  }
-
-  // 4. Upgrade Cost & Level-Up Action Link ("Upgrade for 181")
-  let upgradeCost = null;
-  let levelupHref = null;
-
-  $('a, button, .button, [onclick]').each((_, el) => {
-    const text = $(el).text().replace(/\s+/g, ' ').trim();
-    const href = $(el).attr('href') || '';
-    const match = text.match(/Upgrade for\s+(\d+)/i);
-    if (match) {
-      upgradeCost = parseInt(match[1], 10);
-      if (href) levelupHref = href;
-    }
-  });
-
-  // Also check if "You need X [T] to upgrade" notification is present
-  if (upgradeCost === null) {
-    const bodyText = $('body').text();
-    const needMatch = bodyText.match(/You need\s+(\d+)\s*.*to upgrade/i);
-    if (needMatch) upgradeCost = parseInt(needMatch[1], 10);
-  }
-
-  // Standard Mini Troopers upgrade cost formula fallback by level
-  const LEVEL_COSTS = { 1: 8, 2: 15, 3: 27, 4: 49, 5: 75, 6: 110, 7: 140, 8: 181, 9: 245, 10: 330, 11: 401 };
-  if (upgradeCost === null) {
-    upgradeCost = LEVEL_COSTS[level] || 181;
-  }
-
-  // 5. Parse the 5 AI Config Dropdowns on /t/0
   const aiConfig = {
-    favouriteWeapon: extractSelectValue($, 'Favourite Weapon') || 'Default',
-    favouriteTarget: extractSelectValue($, 'Favourite Target') || 'Anywhere!',
-    preferredVictim: extractSelectValue($, 'Preferred Victim') || 'The biggest threat',
-    fightingStyle: extractSelectValue($, 'Fighting Style') || 'Standard',
-    priorityTarget: extractSelectValue($, 'Priority Target') || 'Default',
+    favouriteWeapon: getSelectedOptionText($t0, 'weapon'),
+    favouriteTarget: getSelectedOptionText($t0, 'loc'),
+    preferredVictim: getSelectedOptionText($t0, 'target'),
+    fightingStyle: getSelectedOptionText($t0, 'move'),
+    priorityTarget: getSelectedOptionText($t0, 'ttype')
   };
 
-  // 6. Parse Unlocked Skills from the /t/0 Grid Tooltips
-  const rawSkillsSet = new Set();
-  $('[onmouseover*="Tip.show"]').each((_, el) => {
-    // Skip top money and power boxes
-    if ($(el).hasClass('money') || $(el).hasClass('power')) return;
-    // Skip inactive/locked grid cells if marked as disabled/off
-    const cls = ($(el).attr('class') || '').toLowerCase();
-    if (cls.includes('off') || cls.includes('empty') || cls.includes('disabled')) return;
-
-    const mouseOver = $(el).attr('onmouseover') || '';
-    const h1Match = mouseOver.match(/<h1>(.*?)<\/h1>/i);
-    if (h1Match && h1Match[1]) {
-      const skillTitle = h1Match[1].replace(/\\'/g, "'").trim();
-      if (skillTitle && skillTitle !== 'Credits' && skillTitle !== 'Power') {
-        rawSkillsSet.add(skillTitle);
-      }
-    }
-  });
-
-  // Sort skills strictly by sortOrder (Type/Color) then alphabetically
-  const skills = Array.from(rawSkillsSet)
-    .map(classifySkill)
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
-
-  // 7. Parse Available Upgrade Choices if page is in "Select your upgrade" mode
-  const availableUpgrades = [];
-  const isSelectingUpgrade =
-    pageTitle.toLowerCase().includes('select your upgrade') || Boolean(advanceMatch);
-
-  $('a[href*="skill="]').each((idx, el) => {
-    const href = $(el).attr('href') || '';
-    const container = $(el).closest('li, div, tr');
-    const skillName =
-      $(el).find('h1, h2, strong, .name').first().text().trim() ||
-      container.find('h1, h2, strong, .name').first().text().trim() ||
-      `Upgrade Option ${idx + 1}`;
-    const desc = container.text().replace(/\s+/g, ' ').trim();
-    const classified = classifySkill(skillName);
-
-    availableUpgrades.push({
-      id: `skill_${idx}`,
-      skillIndex: idx,
-      href,
-      name: classified.name,
-      type: classified.type,
-      color: classified.color,
-      description: desc,
-    });
-  });
-
   return {
+    id: accountId,
+    name: accountId,
+    raidPhase,
     credits,
-    armyPower,
-    isSelectingUpgrade,
+    power,
+    canUpgrade: upgradeCost > 0 && credits >= upgradeCost,
     firstSoldier: {
       slot: 0,
       name: soldierName,
+      avatarUrl,
       level,
       upgradeCost,
-      levelupHref,
       aiConfig,
-      skills,
-      availableUpgrades,
-    },
+      skills: unlockedSkills,
+      availableUpgrades: []
+    }
   };
 }
 
-function extractSelectValue($, labelText) {
-  let selectedText = null;
-  $('select').each((_, selectEl) => {
-    const prevText = $(selectEl).parent().prev().text() + ' ' + $(selectEl).parent().text();
-    if (prevText.toLowerCase().includes(labelText.toLowerCase())) {
-      const opt = $(selectEl).find('option:selected').first();
-      if (opt.length) {
-        selectedText = opt.text().trim();
-      }
+function parseAllAccounts() {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(RAW_HTML_DIR)) {
+    fs.mkdirSync(RAW_HTML_DIR, { recursive: true });
+    fs.writeFileSync(CACHE_FILE, JSON.stringify([], null, 2), 'utf-8');
+    return [];
+  }
+
+  const accountFolders = fs
+    .readdirSync(RAW_HTML_DIR, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
+
+  const accounts = [];
+  for (const folder of accountFolders) {
+    const accountData = parseAccountFolder(folder);
+    if (accountData) {
+      accounts.push(accountData);
     }
-  });
-  return selectedText;
+  }
+
+  fs.writeFileSync(CACHE_FILE, JSON.stringify(accounts, null, 2), 'utf-8');
+  return accounts;
+}
+
+function getCachedOrParsedAccounts() {
+  if (fs.existsSync(CACHE_FILE)) {
+    try {
+      const cached = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8'));
+      if (Array.isArray(cached) && cached.length > 0) {
+        return cached;
+      }
+    } catch (_) {
+      return parseAllAccounts();
+    }
+  }
+  return parseAllAccounts();
 }
 
 module.exports = {
-  parseHqHtml,
-  parseFirstSoldierHtml,
-  classifySkill,
+  parseAccountFolder,
+  parseAllAccounts,
+  getCachedOrParsedAccounts,
+  CACHE_FILE
 };

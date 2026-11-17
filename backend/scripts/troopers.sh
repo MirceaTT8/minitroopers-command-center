@@ -1,23 +1,35 @@
 #!/bin/bash
 
-### FUNCTIONS ###
+# =========================================================================
+# SCRAPE & SAVE RAW HTML FUNCTIONS (FOR NODE.JS BACKEND PARSER)
+# =========================================================================
+function saveAccountHtml {
+    local account_dir="$data_dir/$login_lower"
+    mkdir -p "$account_dir"
 
-prefix="$(dirname "$0")"
-if [[ -f "$prefix/secret.cfg" ]]; then
-    source "$prefix/secret.cfg"
-else
-    echo "Error: secret.cfg not found in $prefix"
-    exit 1
-fi
-
-function grepTrooper {
-    $curl "$site/t/$1" | $egrep --regexp='^[0-9]+$'
+    echo "  [Sync] Saving /hq and /t/0 HTML to $account_dir..."
+    $curl "$site/hq" > "$account_dir/hq.html"
+    $curl "$site/t/0" > "$account_dir/t0.html"
 }
 
 function getMoneyRatio {
-    local ratio=($(grepTrooper 0))
-    local money="${ratio[0]}"
-    local upgrade_cost="${ratio[1]}"
+    local account_dir="$data_dir/$login_lower"
+    local t0_html=""
+
+    if [[ -f "$account_dir/t0.html" ]]; then
+        t0_html=$(cat "$account_dir/t0.html")
+    else
+        t0_html=$($curl "$site/t/0")
+    fi
+
+    # Extract credits from <div class="money">...</div>
+    local money=$(echo "$t0_html" | awk '/class="money"/{flag=1; next} flag && /[0-9]+/{gsub(/[^0-9]/,""); print; exit}')
+    # Extract upgrade cost from "Upgrade for 316"
+    local upgrade_cost=$(echo "$t0_html" | grep -Eo 'Upgrade for [0-9]+' | grep -Eo '[0-9]+' | head -n 1)
+
+    [[ -z "$money" ]] && money=0
+    [[ -z "$upgrade_cost" ]] && upgrade_cost=0
+
     if [[ "$report" == "always" || ( "$report" == "upgradable" && "$money" -ge "$upgrade_cost" ) ]]; then
         echo "$login_original's money for next upgrade : $money/$upgrade_cost"
     fi
@@ -26,40 +38,11 @@ function getMoneyRatio {
 # =========================================================================
 # MISSION FUNCTIONS
 # =========================================================================
-
-# Checks if $login_lower exists in the recruits=("user:count" ...) array from the secret.cfg file.
-# Prints the count if found, or prints nothing if the account is not in the array.
-function getConfiguredRecruits {
-    local entry acc_name rec_count
-    for entry in "${recruits[@]}"; do
-        acc_name=$(echo "${entry%%:*}" | tr '[:upper:]' '[:lower:]')
-        rec_count="${entry#*:}"
-        if [[ "$acc_name" == "$login_lower" ]]; then
-            echo "$rec_count"
-            return 0
-        fi
-    done
-    return 1
-}
-
 function mission {
     echo "========================================="
     echo "Starting Missions phase..."
 
-    local cfg_recruits
-    cfg_recruits="$(getConfiguredRecruits)"
-
     for type in exterminate infiltrate epic; do
-        # If this is the 'epic' mission and the account was found in the recruits array:
-        # Check if the number of recruits is lower than 5. If so, do not trigger epic.
-        if [[ "$type" == "epic" && -n "$cfg_recruits" ]]; then
-            if [[ "$cfg_recruits" =~ ^[0-9]+$ && "$cfg_recruits" -lt 5 ]]; then
-                echo "  Skipping Mission (epic) - account '$login_original' is in recruits array with $cfg_recruits (< 5)."
-                continue
-            fi
-        fi
-
-        # Map mission type to its specific tooltip ID on /hq
         local tip_id=""
         case "$type" in
             exterminate) tip_id="miss_tip" ;;
@@ -70,8 +53,6 @@ function mission {
         for i in {1..3}; do
             local hq_html=$($curl "$site/hq")
 
-            # If the mission button for this type is no longer on /hq,
-            # the mission is either already won or out of attempts for today.
             if ! echo "$hq_html" | grep -q "mission?t=$type"; then
                 echo "  Mission ($type) - no more attempts available today."
                 break
@@ -80,7 +61,6 @@ function mission {
             echo -n "  Running mission ($type) - attempt $i/3... "
             $curl "$site/b/mission?t=$type" > /dev/null
 
-            # Fetch updated /hq and inspect the latest badge for this mission's tip_id
             local updated_hq=$($curl "$site/hq")
             local last_badge=$(echo "$updated_hq" | grep "$tip_id" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
 
@@ -97,11 +77,8 @@ function mission {
 # BATTLE FUNCTIONS
 # =========================================================================
 function getFightKey {
-    # 1. Download the opponent page HTML
     local opp_html=$($curl --cookie-jar "$cookie_file" "$site/b/opp")
 
-    # 2. Parse in the exact HTML order:
-    #    backchoose -> tcard (soldiers) -> opp= (ID) -> po (power)
     local best_opp=$(echo "$opp_html" | awk '
         BEGIN {
             best_opp = ""
@@ -110,15 +87,11 @@ function getFightKey {
             current_opp = ""
             in_po = 0
         }
-
-        # Step A: Start of a new enemy card — reset variables
         /class="backchoose"/ {
             troops = 0
             current_opp = ""
             in_po = 0
         }
-
-        # Step B: Count every soldier card (works even if multiple are on 1 line)
         /class="tcard"/ {
             line = $0
             while (match(line, /class="tcard"/)) {
@@ -126,30 +99,21 @@ function getFightKey {
                 line = substr(line, RSTART + RLENGTH)
             }
         }
-
-        # Step C: Grab the opponent ID (do NOT reset troops here!)
         /opp=[0-9]+/ {
             if (match($0, /opp=[0-9]+/)) {
                 current_opp = substr($0, RSTART, RLENGTH)
             }
         }
-
-        # Step D: Detect the Power section
         /<li class="po">/ {
             in_po = 1
         }
-
-        # Step E: Read the power value and immediately calculate the average
         in_po && /^[ \t]*[0-9]+[ \t]*$/ {
             line = $0
             gsub(/[^0-9]/, "", line)
             power = line + 0
-
             if (current_opp != "" && troops > 0 && power > 0) {
                 avg = power / troops
-                # Debug print to stderr so you can see the math in your terminal!
                 printf "  [Eval] %-12s | Power: %2d | Troops: %d | Avg: %.2f\n", current_opp, power, troops, avg > "/dev/stderr"
-
                 if (avg < min_avg) {
                     min_avg = avg
                     best_opp = current_opp
@@ -157,7 +121,6 @@ function getFightKey {
             }
             in_po = 0
         }
-
         END {
             if (best_opp != "") {
                 printf "  [Selected] %s (Lowest Avg: %.2f)\n", best_opp, min_avg > "/dev/stderr"
@@ -166,7 +129,6 @@ function getFightKey {
         }
     ')
 
-    # 3. Return the best opponent or fallback if parsing fails
     if [[ -n "$best_opp" ]]; then
         echo "$best_opp"
     else
@@ -177,13 +139,13 @@ function getFightKey {
 function fightRandom {
     echo "========================================="
     echo "Starting Battles phase (Random)..."
+
     for i in {1..6}; do
         local key="$(getFightKey)"
         if [[ -n "$key" ]]; then
             echo -n "  Battle $i/6: Attacking opponent ($key)... "
             $curl "$site/b/battle?$key" > /dev/null
 
-            # Check the newest 'bat_tip' result badge on /hq
             local last_bat=$($curl "$site/hq" | grep "bat_tip" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
             if [[ "$last_bat" == "bwin_bg" ]]; then
                 echo "WON!"
@@ -200,8 +162,8 @@ function fightRandom {
 function fightFriend {
     echo "========================================="
     echo "Starting Battles phase (Friend: $1)..."
+
     for i in {1..6}; do
-        # Check if battles are already on cooldown (initMissionTimer(1))
         if $curl "$site/hq" | grep -q "initMissionTimer(1)"; then
             echo "  Battle $i/6: No battles left today."
             break
@@ -230,6 +192,7 @@ function hasRecruits {
 function raid {
     echo "========================================="
     echo "Starting Raids phase..."
+
     for i in {1..9}; do
         if $curl "$site/hq" | grep 'href="/b/raid"' > /dev/null; then
             echo -n "  Raid $i: Recruits available! Executing raid... "
@@ -249,12 +212,18 @@ function raid {
 }
 
 # =========================================================================
-# DAILY SUMMARY REPORT (PARSED DIRECTLY FROM /hq)
+# DAILY SUMMARY REPORT (PARSED DIRECTLY FROM SAVED /hq)
 # =========================================================================
 function printSummary {
-    local hq_html=$($curl "$site/hq")
+    local account_dir="$data_dir/$login_lower"
+    local hq_html=""
 
-    # 1. Battle stats ('bat_tip')
+    if [[ -f "$account_dir/hq.html" ]]; then
+        hq_html=$(cat "$account_dir/hq.html")
+    else
+        hq_html=$($curl "$site/hq")
+    fi
+
     local bat_wins=$(echo "$hq_html" | grep "bat_tip" | grep -c "bwin_bg")
     local bat_losses=$(echo "$hq_html" | grep "bat_tip" | grep -c "bdefeat_bg")
     local bat_total=$((bat_wins + bat_losses))
@@ -263,7 +232,6 @@ function printSummary {
         bat_pct=$(awk "BEGIN { printf \"%.2f\", ($bat_wins / $bat_total) * 100 }")
     fi
 
-    # 2. Mission stats ('miss_tip', 'infil_tip', 'epic_tip')
     local ext_wins=$(echo "$hq_html" | grep "miss_tip" | grep -c "bwin_bg")
     local ext_loss=$(echo "$hq_html" | grep "miss_tip" | grep -c "bdefeat_bg")
     local ext_tot=$((ext_wins + ext_loss))
@@ -278,7 +246,6 @@ function printSummary {
 
     local total_m_wins=$((ext_wins + inf_wins + epic_wins))
 
-    # 3. Raid Phase ('<h1 class="hbox">Raid Phase X</h1>')
     local raid_phase=$(echo "$hq_html" | grep -Eo '<h1 class="hbox">Raid Phase [0-9]+</h1>' | grep -Eo '[0-9]+')
     [[ -z "$raid_phase" ]] && raid_phase="Unknown"
 
@@ -295,7 +262,6 @@ function printSummary {
 }
 
 function authenticate {
-    # Uses --data-urlencode to safely handle special characters like @, &, =, ! in passwords
     if [[ -n "$password" ]]; then
         curl -L --silent --cookie-jar "$cookie_file" \
             --data-urlencode "login=$login_lower" \
@@ -308,50 +274,55 @@ function authenticate {
     fi
 }
 
-# Saves /hq and /t/0 HTML snapshots so the Node.js backend can parse stats, skills & upgrades
-function exportHtmlForBackend {
-    local out_dir="$prefix/../data/raw_html"
-    mkdir -p "$out_dir"
-    $curl "$site/hq" > "$out_dir/${login_lower}_hq.html"
-    $curl "$site/t/0" > "$out_dir/${login_lower}_t0.html"
-}
+# =========================================================================
+# SINGLE ACCOUNT RUNNER
+# =========================================================================
+function runSingleAccount {
+    login_original="$1"
+    password="$2"
+    local custom_friend="$3"
+    [[ -n "$custom_friend" ]] && friend="$custom_friend"
 
-function cleanup {
+    login_lower=$(echo "$login_original" | tr '[:upper:]' '[:lower:]')
+    site="https://$login_lower.trooperstest.gued.es"
+    cookie_file="$(mktemp -t "$login_lower.XXXXXX" --suffix='.cookie')"
+    curl="curl -L --silent --cookie $cookie_file"
+
+    echo ">>> Processing account: $login_original"
+    authenticate
+
+    if [[ "$scrape_only" == "true" ]]; then
+        saveAccountHtml
+        if [[ "$report" != "never" ]]; then
+            getMoneyRatio
+        fi
+    else
+        if [[ -z "$friend" ]]; then
+            fightRandom
+        else
+            fightFriend "$friend"
+        fi
+        mission
+        raid
+        saveAccountHtml
+        printSummary
+        if [[ "$report" != "never" ]]; then
+            getMoneyRatio
+        fi
+    fi
+
     rm --force "$cookie_file"
 }
 
-trap "cleanup" EXIT
-
-### VARIABLES ###
-## Defaults ##
-prefix="$(dirname "$0")"
+# =========================================================================
+# INITIALIZATION & CLI / SECRET.CFG DISPATCHER
+# =========================================================================
+prefix="$(cd "$(dirname "$0")" && pwd)"
+data_dir="$prefix/../data/raw_html"
 ext="com"
 Another="Another"
 report="upgradable"
-
-## Reading config files ##
-[[ -f "$prefix/troopers.cfg" ]] && source "$prefix/troopers.cfg"
-[[ -f "$prefix/secret.cfg" ]] && source "$prefix/secret.cfg"
-[[ -f "$prefix/$ext.culture" ]] && source "$prefix/$ext.culture"
-
-## Reading CLI ##
-if [[ -z "$1" ]]; then
-    echo "Usage: $0 <login> [password] [friend] [--sync-only]"
-    exit 1
-fi
-
-login_original="$1"
-password="$2"
-[[ -n "$3" ]] && friend="$3"
-mode_flag="$4"
-
-# Force login to lowercase for URLs and authentication
-login_lower=$(echo "$login_original" | tr '[:upper:]' '[:lower:]')
-
-## Script Locals ##
-site="https://$login_lower.trooperstest.gued.es"
-cookie_file="$(mktemp -t "$login_lower.XXXXXX" --suffix='.cookie')"
-curl="curl -L --silent --cookie $cookie_file"
+scrape_only="false"
 egrep="grep --extended-regexp --only-matching"
 
 ## Dependency checks ##
@@ -362,34 +333,57 @@ for command in 'grep' 'curl' 'awk' 'tr'; do
     fi
 done
 
-# 0. Authenticate
-authenticate
+## Reading config files ##
+[[ -f "$prefix/troopers.cfg" ]] && source "$prefix/troopers.cfg"
+[[ -f "$prefix/$ext.culture" ]] && source "$prefix/$ext.culture"
 
-# Skip Battles, Missions, and Raids if called with --sync-only from the UI
-if [[ "$mode_flag" != "--sync-only" ]]; then
-    # 1. Execute Battles
-    if [[ -z "$friend" ]]; then
-        fightRandom
+## Parse CLI flags ##
+args=()
+for arg in "$@"; do
+    case "$arg" in
+        --scrape-only|-s|--sync)
+            scrape_only="true"
+            ;;
+        *)
+            args+=("$arg")
+            ;;
+    esac
+done
+
+## Case 1: Single account passed via CLI (./troopers.sh [--scrape-only] user [pass] [friend]) ##
+if [[ ${#args[@]} -gt 0 ]]; then
+    first_arg="${args[0]}"
+    if [[ "$first_arg" == *:* && -z "${args[1]}" ]]; then
+        cli_user="${first_arg%%:*}"
+        cli_pass="${first_arg#*:}"
+        runSingleAccount "$cli_user" "$cli_pass"
     else
-        fightFriend "$friend"
+        runSingleAccount "${args[0]}" "${args[1]}" "${args[2]}"
     fi
-
-    # 2. Execute Missions
-    mission
-
-    # 3. Execute Raids
-    raid
+    exit 0
 fi
 
-# 4. Print Final Summary & Upgrade Money Ratio
-printSummary
-
-if [[ "$report" != "never" ]]; then
-    getMoneyRatio
+## Case 2: No account CLI args -> Load "user1:pass1" "user2:pass2" from secret.cfg ##
+secret_file="$prefix/secret.cfg"
+if [[ ! -f "$secret_file" ]]; then
+    echo "Usage: $0 [--scrape-only] [<login> [password] [friend]]"
+    echo "Or create $secret_file with \"user1:pass1\" \"user2:pass2\""
+    exit 1
 fi
 
-# 5. Export HTML snapshots for the Node.js API
-exportHtmlForBackend
+# Extract all "user:pass" entries from secret.cfg (supports both raw strings and bash arrays)
+mapfile -t account_entries < <(grep -Eo '"[^"]+:[^"]+"' "$secret_file" | tr -d '"')
 
-echo "Finished running script for $login_original!"
+if [[ ${#account_entries[@]} -eq 0 ]]; then
+    echo "error: No \"user:pass\" entries found in $secret_file"
+    exit 1
+fi
+
+for entry in "${account_entries[@]}"; do
+    acc_user="${entry%%:*}"
+    acc_pass="${entry#*:}"
+    runSingleAccount "$acc_user" "$acc_pass"
+done
+
+echo "Finished processing all ${#account_entries[@]} accounts!"
 exit 0

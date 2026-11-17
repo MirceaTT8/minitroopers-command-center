@@ -11,10 +11,9 @@ const router = createRouter({
       component: DashboardView,
     },
     {
-      path: '/account/:id',
+      path: '/account/:accountId',
       name: 'soldier-detail',
       component: SoldierDetailView,
-      props: true,
     },
   ],
 })

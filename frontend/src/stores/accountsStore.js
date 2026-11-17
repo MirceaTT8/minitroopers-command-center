@@ -1,43 +1,69 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { fetchAccountsFromApi } from '@/services/api'
+import { fetchAllAccounts, fetchAccountById, triggerAccountsSync } from '../services/api'
 
 export const useAccountsStore = defineStore('accounts', () => {
   const accounts = ref([])
   const loading = ref(false)
-  const usingMockData = ref(false)
+  const syncing = ref(false)
+  const error = ref('')
 
-  const totalAccounts = computed(() => accounts.value.length)
-
-  const upgradesReadyCount = computed(
-    () => accounts.value.filter((acc) => acc.credits >= acc.firstSoldier.upgradeCost).length,
+  const readyToUpgradeCount = computed(() =>
+    accounts.value.filter(
+      (acc) =>
+        acc.firstSoldier &&
+        acc.firstSoldier.upgradeCost > 0 &&
+        acc.credits >= acc.firstSoldier.upgradeCost
+    ).length
   )
 
-  const currentRaidPhase = computed(() => accounts.value[0]?.raidPhase ?? 'Unknown')
-
-  async function fetchAccounts() {
+  async function loadAccounts() {
     loading.value = true
+    error.value = ''
     try {
-      const result = await fetchAccountsFromApi()
-      accounts.value = result.data
-      usingMockData.value = result.isMock
+      accounts.value = await fetchAllAccounts()
+    } catch (err) {
+      error.value = err.message
     } finally {
       loading.value = false
     }
   }
 
-  function getAccountById(id) {
-    return accounts.value.find((acc) => acc.id === id)
+  async function syncAccounts() {
+    syncing.value = true
+    error.value = ''
+    try {
+      const result = await triggerAccountsSync()
+      accounts.value = result.accounts || []
+    } catch (err) {
+      error.value = err.message
+    } finally {
+      syncing.value = false
+    }
+  }
+
+  async function getAccount(accountId) {
+    const existing = accounts.value.find(
+      (acc) => acc.id.toLowerCase() === accountId.toLowerCase()
+    )
+    if (existing) return existing
+
+    try {
+      return await fetchAccountById(accountId)
+    } catch (err) {
+      error.value = err.message
+      return null
+    }
   }
 
   return {
     accounts,
     loading,
-    usingMockData,
-    totalAccounts,
-    upgradesReadyCount,
-    currentRaidPhase,
-    fetchAccounts,
-    getAccountById,
+    syncing,
+    error,
+    readyToUpgradeCount,
+    loadAccounts,
+    syncAccounts,
+    getAccount,
   }
 })

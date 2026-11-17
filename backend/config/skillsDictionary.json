@@ -1,97 +1,3342 @@
 {
-  "Comanche Auto": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Browning": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Bazooka": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Bazooka M1": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Bazooka M25": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Rocket Launcher": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Mortar": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Infernal Tube": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Grenade": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Glue Grenade": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Sticky Grenade": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Bouncing Grenade": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Grenade Benny": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Pump Action Shotgun": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Semi-Auto Shotgun": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Double-barrelled Shotgun": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Shotgun": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Thompson": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "FAMAS": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Assault Rifle": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "AK47": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "UMP": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Uzi": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Sub-Machine Gun": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Light Machine Gun": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Heavy Machine Gun": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Minigun": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Gatling Gun": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "SparrowHawk": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Sparrowhawk": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "MOS-TECK": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Sniper": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Sniper Rifle": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Desert Eagle": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Revolver": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Beretta": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Pistol": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Loader": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Nimble Fingers": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Hydroshock": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Hydroshock Shells": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Paralysing Shells": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Explosive Shells": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Toxic Shells": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-  "Laser Sights": { "type": "Weapon", "color": "Red", "sortOrder": 1 },
-
-  "Saboteur": { "type": "Role", "color": "Purple", "sortOrder": 2 },
-  "Comms. Officer": { "type": "Role", "color": "Purple", "sortOrder": 2 },
-  "Comms. Officier": { "type": "Role", "color": "Purple", "sortOrder": 2 },
-  "Scout": { "type": "Role", "color": "Purple", "sortOrder": 2 },
-  "Doctor": { "type": "Role", "color": "Purple", "sortOrder": 2 },
-  "Munitions": { "type": "Role", "color": "Purple", "sortOrder": 2 },
-  "Soldier": { "type": "Role", "color": "Purple", "sortOrder": 2 },
-  "Pilot": { "type": "Role", "color": "Purple", "sortOrder": 2 },
-  "Spy": { "type": "Role", "color": "Purple", "sortOrder": 2 },
-
-  "Smart": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Suspicious": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Twinoid": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Trigger Happy": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Sprint": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Sprinter": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Dodge": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Dodger": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Anatomy": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Heartbreaker": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Vicious": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Frenzy": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "On Point": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Adrenaline": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Hyperactive": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Motorcycle": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Light tank": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Rush": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Charge": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Juggler": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Covering Fire": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Vendetta": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Eagle Eye": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Battle-Ready": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Cold-Blooded": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-  "Walkie-Talkie": { "type": "Active", "color": "Yellow", "sortOrder": 3 },
-
-  "Hard Boiled": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Sturdy": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Bulletproof Vest": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Bulletproof vest": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Tuck 'n' Roll": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Survivor": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Camouflage": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Out of Sight": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Back Pack": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Heavyweight": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Huge calves": { "type": "Passive", "color": "Green", "sortOrder": 4 },
-  "Thermos of coffee": { "type": "Passive", "color": "Green", "sortOrder": 4 }
+  "meta": {
+    "version": "1.0.0",
+    "totalSkills": 140,
+    "colors": {
+      "Gray": {
+        "colorOrder": 1,
+        "tailwindBg": "bg-zinc-700/80",
+        "tailwindBorder": "border-zinc-400",
+        "tailwindText": "text-zinc-200",
+        "hex": "#52525b"
+      },
+      "Red": {
+        "colorOrder": 2,
+        "tailwindBg": "bg-red-900/75",
+        "tailwindBorder": "border-red-500",
+        "tailwindText": "text-red-200",
+        "hex": "#dc2626"
+      },
+      "Orange": {
+        "colorOrder": 3,
+        "tailwindBg": "bg-orange-900/75",
+        "tailwindBorder": "border-orange-500",
+        "tailwindText": "text-orange-200",
+        "hex": "#f97316"
+      },
+      "Yellow": {
+        "colorOrder": 4,
+        "tailwindBg": "bg-yellow-900/75",
+        "tailwindBorder": "border-yellow-400",
+        "tailwindText": "text-yellow-200",
+        "hex": "#eab308"
+      },
+      "Green": {
+        "colorOrder": 5,
+        "tailwindBg": "bg-emerald-900/75",
+        "tailwindBorder": "border-emerald-500",
+        "tailwindText": "text-emerald-200",
+        "hex": "#10b981"
+      },
+      "Cyan": {
+        "colorOrder": 6,
+        "tailwindBg": "bg-cyan-900/75",
+        "tailwindBorder": "border-cyan-400",
+        "tailwindText": "text-cyan-200",
+        "hex": "#06b6d4"
+      },
+      "Blue": {
+        "colorOrder": 7,
+        "tailwindBg": "bg-blue-900/75",
+        "tailwindBorder": "border-blue-500",
+        "tailwindText": "text-blue-200",
+        "hex": "#3b82f6"
+      },
+      "Purple": {
+        "colorOrder": 8,
+        "tailwindBg": "bg-purple-900/75",
+        "tailwindBorder": "border-purple-500",
+        "tailwindText": "text-purple-200",
+        "hex": "#a855f7"
+      }
+    },
+    "categories": [
+      {
+        "id": 1,
+        "name": "Category 1: Classes & Specializations",
+        "count": 8
+      },
+      {
+        "id": 2,
+        "name": "Category 2: Weapons, Ammunition & Grenades",
+        "count": 45
+      },
+      {
+        "id": 3,
+        "name": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+        "count": 56
+      },
+      {
+        "id": 4,
+        "name": "Category 4: Armor, Survival, HP & Utility Passives",
+        "count": 26
+      },
+      {
+        "id": 5,
+        "name": "Category 5: Vehicles",
+        "count": 5
+      }
+    ]
+  },
+  "skills": [
+    {
+      "id": 1,
+      "key": "saboteur",
+      "name": "Saboteur",
+      "aliases": [],
+      "category": "Category 1: Classes & Specializations",
+      "subCategory": "1. Classes & Specializations",
+      "type": "Role",
+      "subType": "Global Reserve Passive",
+      "color": "Gray",
+      "categorySortOrder": 1,
+      "colorSortOrder": 1,
+      "ui": {
+        "hex": "#52525b",
+        "bgClass": "bg-zinc-700/80",
+        "borderClass": "border-zinc-400",
+        "textClass": "text-zinc-200"
+      },
+      "stats": null,
+      "description": "Grants +1 Sabotage per level above 5 (e.g., Level 6 = +1, Level 10 = +5). At the start of each battle or Raid wave, each point of Sabotage disables one random weapon carried by an enemy trooper."
+    },
+    {
+      "id": 2,
+      "key": "doctor",
+      "name": "Doctor",
+      "aliases": [],
+      "category": "Category 1: Classes & Specializations",
+      "subCategory": "1. Classes & Specializations",
+      "type": "Role",
+      "subType": "Field Support Active",
+      "color": "Gray",
+      "categorySortOrder": 1,
+      "colorSortOrder": 1,
+      "ui": {
+        "hex": "#52525b",
+        "bgClass": "bg-zinc-700/80",
+        "borderClass": "border-zinc-400",
+        "textClass": "text-zinc-200"
+      },
+      "stats": null,
+      "description": "Heals an injured teammate for 5 HP at Level 6 (+1 HP per additional level), cures poison and paralysis, repairs crippled limbs, and makes the Doctor personally immune to poison and paralysis."
+    },
+    {
+      "id": 3,
+      "key": "soldier",
+      "name": "Soldier",
+      "aliases": [],
+      "category": "Category 1: Classes & Specializations",
+      "subCategory": "1. Classes & Specializations",
+      "type": "Role",
+      "subType": "Frontline Tank Passive",
+      "color": "Gray",
+      "categorySortOrder": 1,
+      "colorSortOrder": 1,
+      "ui": {
+        "hex": "#52525b",
+        "bgClass": "bg-zinc-700/80",
+        "borderClass": "border-zinc-400",
+        "textClass": "text-zinc-200"
+      },
+      "stats": null,
+      "description": "Grants +1 max HP for every level the trooper has (retroactive and future levels) and provides a combat helmet that caps incoming headshot damage at a maximum of 2 damage."
+    },
+    {
+      "id": 4,
+      "key": "munitions",
+      "name": "Munitions",
+      "aliases": [],
+      "category": "Category 1: Classes & Specializations",
+      "subCategory": "1. Classes & Specializations",
+      "type": "Role",
+      "subType": "Field & Global Hybrid",
+      "color": "Gray",
+      "categorySortOrder": 1,
+      "colorSortOrder": 1,
+      "ui": {
+        "hex": "#52525b",
+        "bgClass": "bg-zinc-700/80",
+        "borderClass": "border-zinc-400",
+        "textClass": "text-zinc-200"
+      },
+      "stats": null,
+      "description": "Doubles the frequency of grenade throws across the squad (2x grenade rate) and automatically reloads all weapons for 1 teammate per level above 5 when reinforcements arrive."
+    },
+    {
+      "id": 5,
+      "key": "scout",
+      "name": "Scout",
+      "aliases": [],
+      "category": "Category 1: Classes & Specializations",
+      "subCategory": "1. Classes & Specializations",
+      "type": "Role",
+      "subType": "Global Reserve Passive",
+      "color": "Gray",
+      "categorySortOrder": 1,
+      "colorSortOrder": 1,
+      "ui": {
+        "hex": "#52525b",
+        "bgClass": "bg-zinc-700/80",
+        "borderClass": "border-zinc-400",
+        "textClass": "text-zinc-200"
+      },
+      "stats": null,
+      "description": "Grants +1 squad deployment slot per Scout (raising base deployment from 4 up to a hard cap of 20). Does not scale with additional levels."
+    },
+    {
+      "id": 6,
+      "key": "comms_officer",
+      "name": "Comms. Officer",
+      "aliases": [],
+      "category": "Category 1: Classes & Specializations",
+      "subCategory": "1. Classes & Specializations",
+      "type": "Role",
+      "subType": "Global Reserve Passive",
+      "color": "Gray",
+      "categorySortOrder": 1,
+      "colorSortOrder": 1,
+      "ui": {
+        "hex": "#52525b",
+        "bgClass": "bg-zinc-700/80",
+        "borderClass": "border-zinc-400",
+        "textClass": "text-zinc-200"
+      },
+      "stats": null,
+      "description": "Starts with +5 Communication points at Level 6 and gains +1 Communication per level-up thereafter, unlocking global battle orders (Solo Mission, Locked, Support, Retreat at 10+, and Propaganda at 20+)."
+    },
+    {
+      "id": 7,
+      "key": "pilot",
+      "name": "Pilot",
+      "aliases": [],
+      "category": "Category 1: Classes & Specializations",
+      "subCategory": "1. Classes & Specializations",
+      "type": "Role",
+      "subType": "Vehicle Specialist Passive",
+      "color": "Gray",
+      "categorySortOrder": 1,
+      "colorSortOrder": 1,
+      "ui": {
+        "hex": "#52525b",
+        "bgClass": "bg-zinc-700/80",
+        "borderClass": "border-zinc-400",
+        "textClass": "text-zinc-200"
+      },
+      "stats": null,
+      "description": "Increases the probability of deploying any owned vehicle (Light Tank, Heavy Tank, Helicopter, Fighter Jet) into combat by +25% per level-up."
+    },
+    {
+      "id": 8,
+      "key": "spy",
+      "name": "Spy",
+      "aliases": [],
+      "category": "Category 1: Classes & Specializations",
+      "subCategory": "1. Classes & Specializations",
+      "type": "Role",
+      "subType": "Infiltrator Active",
+      "color": "Gray",
+      "categorySortOrder": 1,
+      "colorSortOrder": 1,
+      "ui": {
+        "hex": "#52525b",
+        "bgClass": "bg-zinc-700/80",
+        "borderClass": "border-zinc-400",
+        "textClass": "text-zinc-200"
+      },
+      "stats": null,
+      "description": "Allows the trooper to infiltrate and spawn directly inside the enemy camp at the start of combat with +50 Initiative (+10 Initiative per additional level) while reducing enemy deployment capacity by -1."
+    },
+    {
+      "id": 9,
+      "key": "pistol",
+      "name": "Pistol",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2A. Handguns",
+      "type": "Weapon",
+      "subType": "Default Handgun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "2-3",
+        "shotsPerBurst": 1,
+        "range": "7",
+        "crit": "x5",
+        "aim": "90%",
+        "recovery": 100,
+        "capacity": "3 (4 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Basic starting sidearm with no special modifiers."
+    },
+    {
+      "id": 10,
+      "key": "revolver",
+      "name": "Revolver",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2A. Handguns",
+      "type": "Weapon",
+      "subType": "Handgun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "4-6",
+        "shotsPerBurst": 1,
+        "range": "9",
+        "crit": "x10",
+        "aim": "75%",
+        "recovery": 120,
+        "capacity": "6 (12 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Always loaded at the start of a fight and knocks the enemy down on hit."
+    },
+    {
+      "id": 11,
+      "key": "desert_eagle",
+      "name": "Desert Eagle",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2A. Handguns",
+      "type": "Weapon",
+      "subType": "Handgun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "4",
+        "shotsPerBurst": 1,
+        "range": "10",
+        "crit": "x10",
+        "aim": "100%",
+        "recovery": 100,
+        "capacity": "4 (8 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Ignores enemy armor completely and has long handgun range."
+    },
+    {
+      "id": 12,
+      "key": "beretta",
+      "name": "Beretta",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2A. Handguns",
+      "type": "Weapon",
+      "subType": "Handgun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "3-4",
+        "shotsPerBurst": 1,
+        "range": "8",
+        "crit": "x10",
+        "aim": "90%",
+        "recovery": 50,
+        "capacity": "4 (8 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Ultra-low recovery time (50), allowing rapid follow-up shots."
+    },
+    {
+      "id": 13,
+      "key": "dual_pistols",
+      "name": "Dual Pistols",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2A. Handguns",
+      "type": "Weapon",
+      "subType": "Handgun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "3-4 (6-8 Total/Burst)",
+        "shotsPerBurst": 2,
+        "range": "8",
+        "crit": "x10",
+        "aim": "80%",
+        "recovery": 100,
+        "capacity": "8 (16 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Fires twice per burst for high close-to-mid-range handgun output."
+    },
+    {
+      "id": 14,
+      "key": "shotgun",
+      "name": "Shotgun",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2B. Shotguns",
+      "type": "Weapon",
+      "subType": "Default Shotgun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "5-8",
+        "shotsPerBurst": 1,
+        "range": "4",
+        "crit": "x10",
+        "aim": "150%",
+        "recovery": 150,
+        "capacity": "1 (4 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Deals zone damage and knocks the enemy down on hit."
+    },
+    {
+      "id": 15,
+      "key": "pump_action_shotgun",
+      "name": "Pump Action Shotgun",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2B. Shotguns",
+      "type": "Weapon",
+      "subType": "Shotgun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "5-10",
+        "shotsPerBurst": 1,
+        "range": "4",
+        "crit": "x10",
+        "aim": "150%",
+        "recovery": 90,
+        "capacity": "1 (6 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Reloads automatically after firing, deals zone damage, and knocks the enemy down."
+    },
+    {
+      "id": 16,
+      "key": "double_barrelled_shotgun",
+      "name": "Double-Barrelled Shotgun",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2B. Shotguns",
+      "type": "Weapon",
+      "subType": "Shotgun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "5-10",
+        "shotsPerBurst": 2,
+        "range": "5",
+        "crit": "x10",
+        "aim": "150%",
+        "recovery": 150,
+        "capacity": "2 (6 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Fires twice per burst, deals zone damage, and knocks the enemy down."
+    },
+    {
+      "id": 17,
+      "key": "scattergun",
+      "name": "Scattergun",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2B. Shotguns",
+      "type": "Weapon",
+      "subType": "Shotgun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "4-12",
+        "shotsPerBurst": 1,
+        "range": "4",
+        "crit": "x5",
+        "aim": "150%",
+        "recovery": 100,
+        "capacity": "1 (6 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Features an extended damage zone (wider AoE cone) and knocks enemies down."
+    },
+    {
+      "id": 18,
+      "key": "semi_auto_shotgun",
+      "name": "Semi-Auto Shotgun",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2B. Shotguns",
+      "type": "Weapon",
+      "subType": "Shotgun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "5-10",
+        "shotsPerBurst": 1,
+        "range": "4",
+        "crit": "x10",
+        "aim": "150%",
+        "recovery": 70,
+        "capacity": "4 (8 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "High magazine capacity (4 shells) with very fast 70 recovery, zone damage, and knockdown."
+    },
+    {
+      "id": 19,
+      "key": "assault_rifle",
+      "name": "Assault Rifle",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2C. Assault Weapons / SMGs",
+      "type": "Weapon",
+      "subType": "Default Assault Weapon",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "2-3 (6-9 Total)",
+        "shotsPerBurst": 3,
+        "range": "2-6",
+        "crit": "x5",
+        "aim": "80%",
+        "recovery": 100,
+        "capacity": "9 (18 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Standard balanced starting rifle."
+    },
+    {
+      "id": 20,
+      "key": "m16",
+      "name": "M16",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2C. Assault Weapons / SMGs",
+      "type": "Weapon",
+      "subType": "Assault Weapon",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "2-3 (6-9 Total)",
+        "shotsPerBurst": 3,
+        "range": "2-6",
+        "crit": "x10",
+        "aim": "80%",
+        "recovery": 80,
+        "capacity": "12 (18 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Upgraded Assault Rifle with double crit rate (x10), faster recovery (80), and a 4-burst magazine (12)."
+    },
+    {
+      "id": 21,
+      "key": "thompson",
+      "name": "Thompson",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2C. Assault Weapons / SMGs",
+      "type": "Weapon",
+      "subType": "Assault Weapon / SMG",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "3-7 (9-21 Total)",
+        "shotsPerBurst": 3,
+        "range": "2-6",
+        "crit": "x10",
+        "aim": "80%",
+        "recovery": 80,
+        "capacity": "9 (18 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Ignores enemy armor completely and rolls high burst damage (9-21)."
+    },
+    {
+      "id": 22,
+      "key": "ak47",
+      "name": "AK47",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2C. Assault Weapons / SMGs",
+      "type": "Weapon",
+      "subType": "Assault Weapon",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "2-3 (8-12 Total)",
+        "shotsPerBurst": 4,
+        "range": "2-7",
+        "crit": "x10",
+        "aim": "100%",
+        "recovery": 100,
+        "capacity": "12 (16 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Fires 4 bullets per burst with 100% base accuracy and slightly longer range (2-7)."
+    },
+    {
+      "id": 23,
+      "key": "famas",
+      "name": "FAMAS",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2C. Assault Weapons / SMGs",
+      "type": "Weapon",
+      "subType": "Assault Weapon",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "3-4 (9-12 Total)",
+        "shotsPerBurst": 3,
+        "range": "1-5 (No minimum range)",
+        "crit": "x10",
+        "aim": "90%",
+        "recovery": 50,
+        "capacity": "9 (18 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Ultra-low recovery (50) and can fire at point-blank range (1-5)."
+    },
+    {
+      "id": 24,
+      "key": "ump",
+      "name": "UMP",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2C. Assault Weapons / SMGs",
+      "type": "Weapon",
+      "subType": "Assault Weapon / SMG",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "3-4 (9-12 Total)",
+        "shotsPerBurst": 3,
+        "range": "2-6",
+        "crit": "x20",
+        "aim": "100%",
+        "recovery": 80,
+        "capacity": "9 (18 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Features a massive x20 Critical Multiplier and 100% base accuracy."
+    },
+    {
+      "id": 25,
+      "key": "sniper",
+      "name": "Sniper",
+      "aliases": [
+        "Sniper Rifle"
+      ],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2D. Sniper Rifles",
+      "type": "Weapon",
+      "subType": "Default Rifle",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "4",
+        "shotsPerBurst": 1,
+        "range": "3-Max",
+        "crit": "x15",
+        "aim": "150%",
+        "recovery": 100,
+        "capacity": "1 (2 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Hits favourite target body part more often; requires a secure zone (no adjacent enemies) to fire."
+    },
+    {
+      "id": 26,
+      "key": "sparrowhawk",
+      "name": "SparrowHawk",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2D. Sniper Rifles",
+      "type": "Weapon",
+      "subType": "Heavy Sniper Rifle",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "3",
+        "shotsPerBurst": 1,
+        "range": "3-Max",
+        "crit": "x50",
+        "aim": "300%",
+        "recovery": 100,
+        "capacity": "1 (4 Total Shots)",
+        "isHeavy": true
+      },
+      "description": "Heavy weapon with the highest accuracy (300%) and fatal killshot multiplier (x50) in the game."
+    },
+    {
+      "id": 27,
+      "key": "mos_teck",
+      "name": "MOS-TECK",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2D. Sniper Rifles",
+      "type": "Weapon",
+      "subType": "Heavy Sniper Rifle",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "6-7",
+        "shotsPerBurst": 1,
+        "range": "3-Max",
+        "crit": "x25",
+        "aim": "150%",
+        "recovery": 120,
+        "capacity": "3 (6 Total Shots)",
+        "isHeavy": true
+      },
+      "description": "Heavy weapon with massive raw per-shot damage (6-7) and a 3-round magazine."
+    },
+    {
+      "id": 28,
+      "key": "ck_magellan",
+      "name": "CK-Magellan",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2D. Sniper Rifles",
+      "type": "Weapon",
+      "subType": "Heavy Sniper Rifle",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "3",
+        "shotsPerBurst": 1,
+        "range": "2-Max",
+        "crit": "x25",
+        "aim": "150%",
+        "recovery": 65,
+        "capacity": "6 (12 Total Shots)",
+        "isHeavy": true
+      },
+      "description": "Semi-auto heavy sniper with a large 6-shot clip, shorter minimum range (2), and fast 65 recovery."
+    },
+    {
+      "id": 29,
+      "key": "lizaro_jungle",
+      "name": "Lizaro Jungle",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2D. Sniper Rifles",
+      "type": "Weapon",
+      "subType": "Heavy Sniper Rifle",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "5",
+        "shotsPerBurst": 1,
+        "range": "3-Max",
+        "crit": "x20",
+        "aim": "120%",
+        "recovery": 100,
+        "capacity": "2 (4 Total Shots)",
+        "isHeavy": true
+      },
+      "description": "Mid-tier heavy sniper rifle holding 2 rounds per magazine with solid base damage (5)."
+    },
+    {
+      "id": 30,
+      "key": "comanche_auto",
+      "name": "Comanche Auto",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2E. Machine Guns",
+      "type": "Weapon",
+      "subType": "Heavy Machine Gun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "3-4 (18-24 Total)",
+        "shotsPerBurst": 6,
+        "range": "6",
+        "crit": "x5",
+        "aim": "90%",
+        "recovery": 60,
+        "capacity": "18 (36 Total Shots)",
+        "isHeavy": true
+      },
+      "description": "Heavy weapon combining high accuracy (90%), fast recovery (60), and 6-round bursts."
+    },
+    {
+      "id": 31,
+      "key": "gatling_gun",
+      "name": "Gatling Gun",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2E. Machine Guns",
+      "type": "Weapon",
+      "subType": "Heavy Machine Gun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "3-6 (15-30 Total)",
+        "shotsPerBurst": 5,
+        "range": "7",
+        "crit": "x5",
+        "aim": "70%",
+        "recovery": 110,
+        "capacity": "20 (40 Total Shots)",
+        "isHeavy": true
+      },
+      "description": "Long-range (7) heavy weapon capable of up to 30 damage per burst."
+    },
+    {
+      "id": 32,
+      "key": "heavy_machine_gun",
+      "name": "Heavy Machine Gun",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2E. Machine Guns",
+      "type": "Weapon",
+      "subType": "Heavy Machine Gun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "3-4 (24-32 Total)",
+        "shotsPerBurst": 8,
+        "range": "6",
+        "crit": "x5",
+        "aim": "70%",
+        "recovery": 150,
+        "capacity": "22 (44 Total Shots)",
+        "isHeavy": true
+      },
+      "description": "Heavy weapon that always starts loaded at the beginning of a fight and fires 8 bullets per burst."
+    },
+    {
+      "id": 33,
+      "key": "minigun",
+      "name": "Minigun",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2E. Machine Guns",
+      "type": "Weapon",
+      "subType": "Heavy Machine Gun",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "2-3 (12-18 Total)",
+        "shotsPerBurst": 6,
+        "range": "6",
+        "crit": "x5",
+        "aim": "100%",
+        "recovery": 80,
+        "capacity": "22 (44 Total Shots)",
+        "isHeavy": true
+      },
+      "description": "Heavy weapon with 100% base accuracy and fast 80 recovery."
+    },
+    {
+      "id": 34,
+      "key": "rocket_launcher",
+      "name": "Rocket Launcher",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2F. Launchers",
+      "type": "Weapon",
+      "subType": "Launcher",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "7-14",
+        "shotsPerBurst": 1,
+        "range": "3-Max",
+        "crit": null,
+        "aim": "65%",
+        "recovery": 100,
+        "capacity": "1 (2 Total Shots)",
+        "isHeavy": false
+      },
+      "description": "Explosive AoE launcher that tosses enemies into the air (inflicting 1-5 fall damage) and is NOT classified as a Heavy weapon (no movement speed penalty)."
+    },
+    {
+      "id": 35,
+      "key": "bazooka_m1",
+      "name": "Bazooka M1",
+      "aliases": [
+        "Bazooka"
+      ],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2F. Launchers",
+      "type": "Weapon",
+      "subType": "Heavy Launcher",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "8-16",
+        "shotsPerBurst": 1,
+        "range": "3-Max",
+        "crit": null,
+        "aim": "75%",
+        "recovery": 100,
+        "capacity": "1 (2 Total Shots)",
+        "isHeavy": true
+      },
+      "description": "Heavy explosive weapon with improved accuracy (75%) and blast radius; deals double damage to vehicles."
+    },
+    {
+      "id": 36,
+      "key": "bazooka_m25",
+      "name": "Bazooka M25",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2F. Launchers",
+      "type": "Weapon",
+      "subType": "Heavy Launcher",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "6-12",
+        "shotsPerBurst": 1,
+        "range": "3-Max",
+        "crit": null,
+        "aim": "60%",
+        "recovery": 80,
+        "capacity": "3 (6 Total Shots)",
+        "isHeavy": true
+      },
+      "description": "Multi-shot heavy launcher holding 3 rockets per clip with faster 80 recovery for sustained AoE bombardment."
+    },
+    {
+      "id": 37,
+      "key": "infernal_tube",
+      "name": "Infernal Tube",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2F. Launchers",
+      "type": "Weapon",
+      "subType": "Heavy Launcher",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "14-28",
+        "shotsPerBurst": 1,
+        "range": "3-Max",
+        "crit": null,
+        "aim": "95%",
+        "recovery": 150,
+        "capacity": "1 (1 Total Shot)",
+        "isHeavy": true
+      },
+      "description": "Single-shot heavy launcher with devastating 14-28 AoE blast damage and 95% base accuracy."
+    },
+    {
+      "id": 38,
+      "key": "knife",
+      "name": "Knife",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2G. Melee Weapon",
+      "type": "Weapon",
+      "subType": "Melee Weapon",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": {
+        "damage": "2-4",
+        "shotsPerBurst": 1,
+        "range": "1 (Melee)",
+        "crit": "x10",
+        "aim": "120%",
+        "recovery": 40,
+        "capacity": "Infinite Ammo",
+        "isHeavy": false
+      },
+      "description": "Ultra-fast melee weapon (40 recovery) that never runs out of ammo and can score x10 critical killshots."
+    },
+    {
+      "id": 39,
+      "key": "hydroshock_shells",
+      "name": "Hydroshock Shells",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2H. Special Ammunition",
+      "type": "Ammo",
+      "subType": "Ammo Equipment",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "All bullets fired are 4 times as likely (4x) to knock the enemy down, cancelling their current action. Consumes 1 Equipment slot; does not apply to Launchers."
+    },
+    {
+      "id": 40,
+      "key": "paralysing_shells",
+      "name": "Paralysing Shells",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2H. Special Ammunition",
+      "type": "Ammo",
+      "subType": "Ammo Equipment",
+      "color": "Cyan",
+      "categorySortOrder": 2,
+      "colorSortOrder": 6,
+      "ui": {
+        "hex": "#06b6d4",
+        "bgClass": "bg-cyan-900/75",
+        "borderClass": "border-cyan-400",
+        "textClass": "text-cyan-200"
+      },
+      "stats": null,
+      "description": "Bullets have a chance on hit to paralyse the target, freezing their turn gauge. Consumes 1 Equipment slot; does not apply to Launchers."
+    },
+    {
+      "id": 41,
+      "key": "toxic_shells",
+      "name": "Toxic Shells",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2H. Special Ammunition",
+      "type": "Ammo",
+      "subType": "Ammo Equipment",
+      "color": "Cyan",
+      "categorySortOrder": 2,
+      "colorSortOrder": 6,
+      "ui": {
+        "hex": "#06b6d4",
+        "bgClass": "bg-cyan-900/75",
+        "borderClass": "border-cyan-400",
+        "textClass": "text-cyan-200"
+      },
+      "stats": null,
+      "description": "Bullets poison the enemy on hit, dealing damage over time each turn unless cured by a Doctor. Consumes 1 Equipment slot; does not apply to Launchers."
+    },
+    {
+      "id": 42,
+      "key": "explosive_shells",
+      "name": "Explosive Shells",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2H. Special Ammunition",
+      "type": "Ammo",
+      "subType": "Ammo Equipment",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "Doubles bullet damage (2x damage) for up to 6 shots/bursts. Consumes 1 Equipment slot; does not apply to Launchers."
+    },
+    {
+      "id": 43,
+      "key": "armor_piercing_shells",
+      "name": "Armor-Piercing Shells",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2H. Special Ammunition",
+      "type": "Ammo",
+      "subType": "Ammo Equipment",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "Ignores all target armor (Bulletproof Vest, Heavy Armor) and deals bonus damage to armored vehicles. Consumes 1 Equipment slot; does not apply to Launchers."
+    },
+    {
+      "id": 44,
+      "key": "grenade",
+      "name": "Grenade",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2I. Grenades",
+      "type": "Grenade",
+      "subType": "Default Grenade Equipment",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "Standard explosive grenade dealing AoE blast damage (4-8) and tossing hit enemies into the air. Consumes 1 Equipment slot."
+    },
+    {
+      "id": 45,
+      "key": "fragmentation_grenade",
+      "name": "Fragmentation Grenade",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2I. Grenades",
+      "type": "Grenade",
+      "subType": "Grenade Equipment",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "Upgraded high-shrapnel grenade with a larger blast zone and higher base damage (6-12) that damages multiple body parts. Consumes 1 Equipment slot."
+    },
+    {
+      "id": 46,
+      "key": "flashbang",
+      "name": "Flashbang",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2I. Grenades",
+      "type": "Grenade",
+      "subType": "Grenade Equipment",
+      "color": "Cyan",
+      "categorySortOrder": 2,
+      "colorSortOrder": 6,
+      "ui": {
+        "hex": "#06b6d4",
+        "bgClass": "bg-cyan-900/75",
+        "borderClass": "border-cyan-400",
+        "textClass": "text-cyan-200"
+      },
+      "stats": null,
+      "description": "Non-lethal tactical grenade that blinds and stuns all enemies caught in the blast zone, drastically reducing their Aim and Initiative. Consumes 1 Equipment slot."
+    },
+    {
+      "id": 47,
+      "key": "gas_grenade",
+      "name": "Gas Grenade",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2I. Grenades",
+      "type": "Grenade",
+      "subType": "Grenade Equipment",
+      "color": "Cyan",
+      "categorySortOrder": 2,
+      "colorSortOrder": 6,
+      "ui": {
+        "hex": "#06b6d4",
+        "bgClass": "bg-cyan-900/75",
+        "borderClass": "border-cyan-400",
+        "textClass": "text-cyan-200"
+      },
+      "stats": null,
+      "description": "Releases a toxic cloud that poisons all troopers in the target area, dealing recurring HP damage each turn. Consumes 1 Equipment slot."
+    },
+    {
+      "id": 48,
+      "key": "glue_grenade",
+      "name": "Glue Grenade",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2I. Grenades",
+      "type": "Grenade",
+      "subType": "Grenade Equipment",
+      "color": "Cyan",
+      "categorySortOrder": 2,
+      "colorSortOrder": 6,
+      "ui": {
+        "hex": "#06b6d4",
+        "bgClass": "bg-cyan-900/75",
+        "borderClass": "border-cyan-400",
+        "textClass": "text-cyan-200"
+      },
+      "stats": null,
+      "description": "Coats the target zone in adhesive, immobilizing hit enemies so they cannot move or dodge. Consumes 1 Equipment slot."
+    },
+    {
+      "id": 49,
+      "key": "shock_grenade",
+      "name": "Shock Grenade",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2I. Grenades",
+      "type": "Grenade",
+      "subType": "Grenade Equipment",
+      "color": "Cyan",
+      "categorySortOrder": 2,
+      "colorSortOrder": 6,
+      "ui": {
+        "hex": "#06b6d4",
+        "bgClass": "bg-cyan-900/75",
+        "borderClass": "border-cyan-400",
+        "textClass": "text-cyan-200"
+      },
+      "stats": null,
+      "description": "Releases an electrical blast that disarms hit enemies (forcing them to drop their active weapon) and briefly stuns them. Consumes 1 Equipment slot."
+    },
+    {
+      "id": 50,
+      "key": "clown_grenade",
+      "name": "Clown Grenade",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2I. Grenades",
+      "type": "Grenade",
+      "subType": "Grenade Equipment",
+      "color": "Purple",
+      "categorySortOrder": 2,
+      "colorSortOrder": 8,
+      "ui": {
+        "hex": "#a855f7",
+        "bgClass": "bg-purple-900/75",
+        "borderClass": "border-purple-500",
+        "textClass": "text-purple-200"
+      },
+      "stats": null,
+      "description": "Psychological/Trick grenade (Pink/Clown grenade) that confuses and distracts enemies in the blast radius (countered by Smart). Consumes 1 Equipment slot."
+    },
+    {
+      "id": 51,
+      "key": "grenade_benny",
+      "name": "Grenade Benny",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2I. Grenades",
+      "type": "Grenade",
+      "subType": "Heavy Grenade Skill",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "Allows the trooper to hurl a massive bundle of grenades dealing 12-24 AoE damage across a huge radius."
+    },
+    {
+      "id": 52,
+      "key": "healing_grenade",
+      "name": "Healing Grenade",
+      "aliases": [
+        "Healing Grenade"
+      ],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2I. Grenades",
+      "type": "Grenade",
+      "subType": "Doctor Grenade Equipment",
+      "color": "Purple",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "Doctor-exclusive support grenade that heals allies and cures status effects in the target splash zone. Consumes 1 Equipment slot."
+    },
+    {
+      "id": 53,
+      "key": "black_hole_grenade",
+      "name": "Black Hole Grenade",
+      "aliases": [],
+      "category": "Category 2: Weapons, Ammunition & Grenades",
+      "subCategory": "2I. Grenades",
+      "type": "Grenade",
+      "subType": "Grenade Equipment",
+      "color": "Red",
+      "categorySortOrder": 2,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "High-tier gravity grenade that pulls nearby troopers into the center of the blast and inflicts heavy crushing damage. Consumes 1 Equipment slot."
+    },
+    {
+      "id": 54,
+      "key": "loader",
+      "name": "Loader",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Weapon Handling",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "The trooper's primary/selected weapon starts the battle already loaded, skipping the turn-1 reload animation."
+    },
+    {
+      "id": 55,
+      "key": "nimble_fingers",
+      "name": "Nimble Fingers",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Weapon Handling",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Operates weapons twice as quickly and loads 2 shells at a time into single-shell weapons (like Shotguns and Snipers)."
+    },
+    {
+      "id": 56,
+      "key": "twinoid",
+      "name": "Twinoid",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Combat Stimulant Equipment",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Consumes a Twinoid pill to gain +500 Initiative and fire/act twice per cycle."
+    },
+    {
+      "id": 57,
+      "key": "trigger_happy",
+      "name": "Trigger Happy",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Firing Rate",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Fires an extra burst/shot whenever attacking with a firearm."
+    },
+    {
+      "id": 58,
+      "key": "tail_gunner",
+      "name": "Tail Gunner",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Machine Gun Skill",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Fires 2 additional bursts when using an automatic / machine gun weapon."
+    },
+    {
+      "id": 59,
+      "key": "nervous",
+      "name": "Nervous",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Firing Rate",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "The trooper occasionally panics and empties their entire magazine clip into the target in a single turn."
+    },
+    {
+      "id": 60,
+      "key": "juggler",
+      "name": "Juggler",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Weapon Handling",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Allows the trooper to switch between carried weapons instantly (0 recovery cost)."
+    },
+    {
+      "id": 61,
+      "key": "battle_ready",
+      "name": "Battle-Ready",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Reloading & Movement",
+      "color": "Green",
+      "categorySortOrder": 3,
+      "colorSortOrder": 5,
+      "ui": {
+        "hex": "#10b981",
+        "bgClass": "bg-emerald-900/75",
+        "borderClass": "border-emerald-500",
+        "textClass": "text-emerald-200"
+      },
+      "stats": null,
+      "description": "Automatically reloads the equipped weapon while moving across the battlefield."
+    },
+    {
+      "id": 62,
+      "key": "rucksack",
+      "name": "Rucksack",
+      "aliases": [
+        "Back Pack",
+        "Backpack"
+      ],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Ammo Supply Equipment",
+      "color": "Green",
+      "categorySortOrder": 3,
+      "colorSortOrder": 5,
+      "ui": {
+        "hex": "#10b981",
+        "bgClass": "bg-emerald-900/75",
+        "borderClass": "border-emerald-500",
+        "textClass": "text-emerald-200"
+      },
+      "stats": null,
+      "description": "After moving once, the trooper's weapons and ammunition reserves are fully replenished."
+    },
+    {
+      "id": 63,
+      "key": "covering_fire",
+      "name": "Covering Fire",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Suppression",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Shots fired by this trooper suppress the target, reducing the enemy's Initiative and delaying their next turn."
+    },
+    {
+      "id": 64,
+      "key": "last_mohican",
+      "name": "Last Mohican",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Clutch Combat",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "If the trooper is the last surviving member of your squad on the field, they empty their entire clip and deal double (2x) damage."
+    },
+    {
+      "id": 65,
+      "key": "unshakable",
+      "name": "Unshakable",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3A. Weapon Handling, Reloading & Firing Rate",
+      "type": "Active",
+      "subType": "Weapon Retention",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Being shot in the arm or hit by enemies does not cause the trooper to drop their weapon or suffer performance penalties."
+    },
+    {
+      "id": 66,
+      "key": "laser_sights",
+      "name": "Laser Sights",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Aim Equipment",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Grants +80% Aim bonus to equipped firearms."
+    },
+    {
+      "id": 67,
+      "key": "eye_of_the_tiger",
+      "name": "Eye of the Tiger",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Aim Passive",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Grants +50% Aim with all firearms."
+    },
+    {
+      "id": 68,
+      "key": "heat_sensor",
+      "name": "Heat Sensor",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Aim & Anti-Dodge Equipment",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Grants +20% Aim and prevents the targeted enemy from dodging the shot."
+    },
+    {
+      "id": 69,
+      "key": "barrel_extension",
+      "name": "Barrel Extension",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Range & Aim Equipment",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Grants +1 Range and +10% Aim for all firearms."
+    },
+    {
+      "id": 70,
+      "key": "compensator",
+      "name": "Compensator",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Recoil & Aim Equipment",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Reduces aiming wait/recovery time between bursts and stabilizes recoil."
+    },
+    {
+      "id": 71,
+      "key": "biped",
+      "name": "Biped",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Stabilizer Equipment",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Eliminates the accuracy penalty when firing at moving targets."
+    },
+    {
+      "id": 72,
+      "key": "cold_blooded",
+      "name": "Cold Blooded",
+      "aliases": [
+        "Cold-Blooded"
+      ],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Aim Speed",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "The trooper takes aim twice as quickly (halves aiming time, huge for Snipers and Launchers)."
+    },
+    {
+      "id": 73,
+      "key": "anatomy",
+      "name": "Anatomy",
+      "aliases": [
+        "Anatomist"
+      ],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Critical Hit",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Dramatically increases the chance of scoring an instant Fatal Killshot and hitting the trooper's Favourite Target body part."
+    },
+    {
+      "id": 74,
+      "key": "heartbreaker",
+      "name": "Heartbreaker",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Critical Hit",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Greatly increases the chance of scoring an instant Killshot when hitting the enemy in the heart."
+    },
+    {
+      "id": 75,
+      "key": "vicious",
+      "name": "Vicious",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Critical Targeting",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Increases the probability of hitting already-wounded body parts to cripple limbs faster."
+    },
+    {
+      "id": 76,
+      "key": "unforgiving",
+      "name": "Unforgiving",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Damage Scaling",
+      "color": "Red",
+      "categorySortOrder": 3,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "Always inflicts maximum weapon damage against an opponent this trooper has already hit once."
+    },
+    {
+      "id": 77,
+      "key": "blind_fury",
+      "name": "Blind Fury",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3B. Aim, Range & Critical Killshot Skills",
+      "type": "Active",
+      "subType": "Anti-Blindness",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Negates sight/accuracy penalties from Flashbangs or eye injuries, allowing the trooper to keep firing accurately even when blinded."
+    },
+    {
+      "id": 78,
+      "key": "on_point",
+      "name": "On Point",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Initiative",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Grants +200 Initiative at the start of combat so the trooper acts before everyone else."
+    },
+    {
+      "id": 79,
+      "key": "sprinter",
+      "name": "Sprinter",
+      "aliases": [
+        "Sprint"
+      ],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Movement Speed",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Increases the trooper's movement speed by +100% (2x Speed)."
+    },
+    {
+      "id": 80,
+      "key": "thermos_of_coffee",
+      "name": "Thermos of Coffee",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Speed Equipment",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Grants a permanent +25% Speed boost."
+    },
+    {
+      "id": 81,
+      "key": "adrenaline",
+      "name": "Adrenaline",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Initiative & Speed",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Grants an immediate burst of Initiative and Speed whenever the trooper takes damage or enters critical combat."
+    },
+    {
+      "id": 82,
+      "key": "frenetic",
+      "name": "Frenetic",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Kill Reset",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Whenever this trooper defeats/kills an enemy, they immediately gain +200 Initiative to chain another turn."
+    },
+    {
+      "id": 83,
+      "key": "enthusiastic",
+      "name": "Enthusiastic",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Speed",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Grants +25% Speed while the trooper is at 100% full HP."
+    },
+    {
+      "id": 84,
+      "key": "survival_instinct",
+      "name": "Survival Instinct",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Clutch Speed",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Grants +50% Speed whenever the trooper drops below 50% of their max HP."
+    },
+    {
+      "id": 85,
+      "key": "hyperactive",
+      "name": "Hyperactive",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Speed & Disruption",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Grants +50% Speed and causes the trooper to run around erratically, interfering with enemy targeting."
+    },
+    {
+      "id": 86,
+      "key": "amphetamine_shot",
+      "name": "Amphetamine Shot",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Doctor Speed Equipment",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Doctor-exclusive syringe that grants +100% Speed (2x Speed) for 500 turns."
+    },
+    {
+      "id": 87,
+      "key": "hurry",
+      "name": "Hurry",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Action Frequency",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Grants +10% Speed and doubles (+100%) the frequency of using special class powers and equipment."
+    },
+    {
+      "id": 88,
+      "key": "restless",
+      "name": "Restless",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Reactive Initiative",
+      "color": "Green",
+      "categorySortOrder": 3,
+      "colorSortOrder": 5,
+      "ui": {
+        "hex": "#10b981",
+        "bgClass": "bg-emerald-900/75",
+        "borderClass": "border-emerald-500",
+        "textClass": "text-emerald-200"
+      },
+      "stats": null,
+      "description": "Whenever any trooper moves on the battlefield, this trooper gains +200 Initiative."
+    },
+    {
+      "id": 89,
+      "key": "bounce_back",
+      "name": "Bounce Back",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Knockdown Recovery",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "The trooper takes no fall damage when blasted into the air and immediately gains Initiative upon getting back up."
+    },
+    {
+      "id": 90,
+      "key": "zigzag",
+      "name": "Zigzag",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Evasive Movement",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "The trooper runs in a zigzag pattern while advancing, making them significantly harder to hit while moving."
+    },
+    {
+      "id": 91,
+      "key": "rush",
+      "name": "Rush",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Gap Closer",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "The trooper immediately rushes forward toward the enemy line at the start of combat to get within weapon range."
+    },
+    {
+      "id": 92,
+      "key": "charge",
+      "name": "Charge",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Melee Gap Closer",
+      "color": "Red",
+      "categorySortOrder": 3,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "Automatically charges into hand-to-hand range whenever an enemy is nearby."
+    },
+    {
+      "id": 93,
+      "key": "wife_beater",
+      "name": "Wife Beater",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3C. Initiative, Speed & Battlefield Movement",
+      "type": "Active",
+      "subType": "Light Attire",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Grants +30% Speed and +30% Dodge chance."
+    },
+    {
+      "id": 94,
+      "key": "smart",
+      "name": "Smart",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Meta Upgrade & Counter Passive",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Increases level-up skill choices from 2 to 3 options every level; also counters enemy Propaganda, Bait, Clown Grenades, and slightly reduces enemy Sabotage effectiveness."
+    },
+    {
+      "id": 95,
+      "key": "suspicious",
+      "name": "Suspicious",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Anti-Sabotage & Anti-Friendly Fire",
+      "color": "Blue",
+      "categorySortOrder": 3,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Grants 100% immunity to allied Friendly Fire, 100% immunity to enemy Sabotage, and +200 Initiative for every enemy Spy on the field (unlocked at Level 7+)."
+    },
+    {
+      "id": 96,
+      "key": "vendetta",
+      "name": "Vendetta",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Revenge Buff",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Grants +50 Initiative and prioritizes attacking the specific enemy who last injured this trooper or killed an ally."
+    },
+    {
+      "id": 97,
+      "key": "faceboot",
+      "name": "Faceboot",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Melee Kick",
+      "color": "Red",
+      "categorySortOrder": 3,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "When engaging an enemy in hand-to-hand combat, delivers a powerful kick to the opponent's face that knocks them back."
+    },
+    {
+      "id": 98,
+      "key": "fists_of_fury",
+      "name": "Fists of Fury",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Melee Punch",
+      "color": "Red",
+      "categorySortOrder": 3,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "Grants +1 damage to punches and a 50% chance to disarm the opponent (forcing them to drop their weapon)."
+    },
+    {
+      "id": 99,
+      "key": "wrestler",
+      "name": "Wrestler",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Melee Throw",
+      "color": "Red",
+      "categorySortOrder": 3,
+      "colorSortOrder": 2,
+      "ui": {
+        "hex": "#dc2626",
+        "bgClass": "bg-red-900/75",
+        "borderClass": "border-red-500",
+        "textClass": "text-red-200"
+      },
+      "stats": null,
+      "description": "In hand-to-hand combat, throws the opponent into the air, inflicting fall damage (1-5) and knocking them down."
+    },
+    {
+      "id": 100,
+      "key": "stamp",
+      "name": "Stamp",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Ground Stomp",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Tramples knocked-down enemies on the ground for extra melee damage as the trooper runs past them."
+    },
+    {
+      "id": 101,
+      "key": "death_grip",
+      "name": "Death Grip",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Target Lock & Melee",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Increases fist damage, never drops weapons, and never loses lock on the current target."
+    },
+    {
+      "id": 102,
+      "key": "king_of_boules",
+      "name": "King of Boules",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Grenade Accuracy",
+      "color": "Orange",
+      "categorySortOrder": 3,
+      "colorSortOrder": 3,
+      "ui": {
+        "hex": "#f97316",
+        "bgClass": "bg-orange-900/75",
+        "borderClass": "border-orange-500",
+        "textClass": "text-orange-200"
+      },
+      "stats": null,
+      "description": "Grenades thrown by this trooper never miss their target."
+    },
+    {
+      "id": 103,
+      "key": "interception",
+      "name": "Interception",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Anti-Grenade",
+      "color": "Blue",
+      "categorySortOrder": 3,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Allows the trooper to catch or bat away incoming enemy grenades, throwing them back before they detonate."
+    },
+    {
+      "id": 104,
+      "key": "reverse_attack",
+      "name": "Reverse Attack",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Counter-Attack",
+      "color": "Green",
+      "categorySortOrder": 3,
+      "colorSortOrder": 5,
+      "ui": {
+        "hex": "#10b981",
+        "bgClass": "bg-emerald-900/75",
+        "borderClass": "border-emerald-500",
+        "textClass": "text-emerald-200"
+      },
+      "stats": null,
+      "description": "Immediately executes a counter-attack whenever hit by an enemy at close/mid range."
+    },
+    {
+      "id": 105,
+      "key": "out_of_bounds",
+      "name": "Out of Bounds",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Flanking",
+      "color": "Green",
+      "categorySortOrder": 3,
+      "colorSortOrder": 5,
+      "ui": {
+        "hex": "#10b981",
+        "bgClass": "bg-emerald-900/75",
+        "borderClass": "border-emerald-500",
+        "textClass": "text-emerald-200"
+      },
+      "stats": null,
+      "description": "If knocked or pushed to the edge of the battlefield, the trooper re-positions behind the enemy or avoids out-of-bounds penalties."
+    },
+    {
+      "id": 106,
+      "key": "talky_walky",
+      "name": "Talky-Walky",
+      "aliases": [
+        "Walkie-Talkie"
+      ],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Reinforcement Equipment",
+      "color": "Green",
+      "categorySortOrder": 3,
+      "colorSortOrder": 5,
+      "ui": {
+        "hex": "#10b981",
+        "bgClass": "bg-emerald-900/75",
+        "borderClass": "border-emerald-500",
+        "textClass": "text-emerald-200"
+      },
+      "stats": null,
+      "description": "Calls in reinforcement backup waves at the start of combat."
+    },
+    {
+      "id": 107,
+      "key": "binoculars",
+      "name": "Binoculars",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Spotting Equipment",
+      "color": "Yellow",
+      "categorySortOrder": 3,
+      "colorSortOrder": 4,
+      "ui": {
+        "hex": "#eab308",
+        "bgClass": "bg-yellow-900/75",
+        "borderClass": "border-yellow-400",
+        "textClass": "text-yellow-200"
+      },
+      "stats": null,
+      "description": "Increases squad spotting range and removes long-range accuracy penalties for allied fire."
+    },
+    {
+      "id": 108,
+      "key": "friendly_fire",
+      "name": "Friendly Fire",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Reckless Firing",
+      "color": "Blue",
+      "categorySortOrder": 3,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "The trooper fires into crowded melee scrums without hesitation—increases firing frequency when allies are in the line of fire (dangerous unless allies have Suspicious)."
+    },
+    {
+      "id": 109,
+      "key": "crybaby",
+      "name": "Crybaby",
+      "aliases": [],
+      "category": "Category 3: Active Combat, Aim, Speed & Tactical Skills",
+      "subCategory": "3D. Close-Combat, Grenade Mastery & Tactical Triggers",
+      "type": "Active",
+      "subType": "Aggro Shift",
+      "color": "Blue",
+      "categorySortOrder": 3,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "When injured, the trooper cries out so enemies stop targeting them or allies rush to their defense."
+    },
+    {
+      "id": 110,
+      "key": "bulletproof_vest",
+      "name": "Bulletproof Vest",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4A. Body Armor & Damage Reduction",
+      "type": "Passive",
+      "subType": "Armor Equipment",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Grants +1 Armor (reduces incoming bullet damage by 1 per hit) and halves the chance of suffering critical/organ hits."
+    },
+    {
+      "id": 111,
+      "key": "heavy_armor",
+      "name": "Heavy Armor",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4A. Body Armor & Damage Reduction",
+      "type": "Passive",
+      "subType": "Armor Equipment",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Grants heavy damage reduction (-1 to -2 damage per bullet), at the cost of -20% movement Speed."
+    },
+    {
+      "id": 112,
+      "key": "full_metal_balaclava",
+      "name": "Full Metal Balaclava",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4A. Body Armor & Damage Reduction",
+      "type": "Passive",
+      "subType": "Head Armor Equipment",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Protects the trooper's head, reducing incoming headshot damage and preventing facial/eye critical injuries."
+    },
+    {
+      "id": 113,
+      "key": "hard_boiled",
+      "name": "Hard Boiled",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4A. Body Armor & Damage Reduction",
+      "type": "Passive",
+      "subType": "Injury Immunity",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "The trooper incurs zero speed or accuracy penalties when injured (crippled arms/legs still function at 100%)."
+    },
+    {
+      "id": 114,
+      "key": "invincible",
+      "name": "Invincible",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4A. Body Armor & Damage Reduction",
+      "type": "Passive",
+      "subType": "Killshot Immunity",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Renders the trooper completely immune to instant Fatal Killshots (enemies must deplete their full HP bar to kill them)."
+    },
+    {
+      "id": 115,
+      "key": "sturdy",
+      "name": "Sturdy",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4B. Health Point (HP) & Strength Boosters",
+      "type": "Passive",
+      "subType": "HP & Heavy Weapon Mastery",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Grants +3 HP and completely negates the -50% movement speed penalty for carrying Heavy Weapons."
+    },
+    {
+      "id": 116,
+      "key": "huge_calves",
+      "name": "Huge Calves",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4B. Health Point (HP) & Strength Boosters",
+      "type": "Passive",
+      "subType": "HP & Speed",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Grants +3 HP and +25% movement Speed."
+    },
+    {
+      "id": 117,
+      "key": "heavyweight",
+      "name": "Heavyweight",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4B. Health Point (HP) & Strength Boosters",
+      "type": "Passive",
+      "subType": "Massive HP",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Grants +10 HP, at the cost of -20% movement Speed."
+    },
+    {
+      "id": 118,
+      "key": "brick_shouse",
+      "name": "Brick Shouse",
+      "aliases": [
+        "Brick S***house",
+        "Brick ShitHouse",
+        "Brick Shithouse"
+      ],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4B. Health Point (HP) & Strength Boosters",
+      "type": "Passive",
+      "subType": "HP & Cover",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Grants a massive HP boost and allows the trooper's bulky frame to act as physical cover for teammates behind them."
+    },
+    {
+      "id": 119,
+      "key": "bait",
+      "name": "Bait",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4B. Health Point (HP) & Strength Boosters",
+      "type": "Passive",
+      "subType": "Tank Aggro",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Grants bonus HP and makes the trooper much easier/more likely to be targeted by enemies, drawing fire away from fragile specialists."
+    },
+    {
+      "id": 120,
+      "key": "dodger",
+      "name": "Dodger",
+      "aliases": [
+        "Dodge"
+      ],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4C. Dodge, Stealth & Evasion Passives",
+      "type": "Passive",
+      "subType": "Evasion",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "The first shot fired at this trooper is automatically dodged, with an ongoing passive bonus to dodge subsequent attacks."
+    },
+    {
+      "id": 121,
+      "key": "tuck_n_roll",
+      "name": "Tuck 'n' Roll",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4C. Dodge, Stealth & Evasion Passives",
+      "type": "Passive",
+      "subType": "Evasion",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "The trooper rolls on the ground to evade incoming bursts and explosive blasts."
+    },
+    {
+      "id": 122,
+      "key": "take_cover",
+      "name": "Take Cover!",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4C. Dodge, Stealth & Evasion Passives",
+      "type": "Passive",
+      "subType": "Reloading Evasion",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Whenever the trooper is reloading, 50% of enemy shots fired at them automatically miss."
+    },
+    {
+      "id": 123,
+      "key": "camouflage",
+      "name": "Camouflage",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4C. Dodge, Stealth & Evasion Passives",
+      "type": "Passive",
+      "subType": "Stealth",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Significantly reduces the chance of being targeted by enemies and increases the chance that enemy shots miss at range."
+    },
+    {
+      "id": 124,
+      "key": "commando",
+      "name": "Commando",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4C. Dodge, Stealth & Evasion Passives",
+      "type": "Passive",
+      "subType": "Stealth & Terrain",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Grants stealth evasion and bonus combat effectiveness when infiltrating or fighting from cover."
+    },
+    {
+      "id": 125,
+      "key": "survivor",
+      "name": "Survivor",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4D. Medical Recovery, Revive & Luck Passives",
+      "type": "Passive",
+      "subType": "Revive",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Allows the trooper to survive a fatal blow with 1 HP (or crawl out alive after their vehicle is destroyed)."
+    },
+    {
+      "id": 126,
+      "key": "first_aid",
+      "name": "First Aid",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4D. Medical Recovery, Revive & Luck Passives",
+      "type": "Passive",
+      "subType": "Self-Heal Equipment",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Automatically replenishes HP once the trooper drops below 50% life points."
+    },
+    {
+      "id": 127,
+      "key": "saviour",
+      "name": "Saviour",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4D. Medical Recovery, Revive & Luck Passives",
+      "type": "Passive",
+      "subType": "Doctor Revive",
+      "color": "Green",
+      "categorySortOrder": 4,
+      "colorSortOrder": 5,
+      "ui": {
+        "hex": "#10b981",
+        "bgClass": "bg-emerald-900/75",
+        "borderClass": "border-emerald-500",
+        "textClass": "text-emerald-200"
+      },
+      "stats": null,
+      "description": "Doctor-exclusive skill that allows the Doctor to revive/resuscitate a fallen teammate during combat."
+    },
+    {
+      "id": 128,
+      "key": "lucky_charm",
+      "name": "Lucky Charm",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4D. Medical Recovery, Revive & Luck Passives",
+      "type": "Passive",
+      "subType": "Luck Equipment",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Increases the trooper's luck, reducing enemy critical hit chances and improving survival rolls."
+    },
+    {
+      "id": 129,
+      "key": "fall_guy",
+      "name": "Fall Guy",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4D. Medical Recovery, Revive & Luck Passives",
+      "type": "Passive",
+      "subType": "Damage Redirection",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Absorbs or redirects incoming lethal shots aimed at nearby high-value allies."
+    },
+    {
+      "id": 130,
+      "key": "martyr",
+      "name": "Martyr",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4D. Medical Recovery, Revive & Luck Passives",
+      "type": "Passive",
+      "subType": "On-Death Effect",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "When this trooper is killed in combat, they detonate an explosive / grant a massive buff to avenge their death."
+    },
+    {
+      "id": 131,
+      "key": "radio",
+      "name": "Radio",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4E. Global Army, Economy & Special Utility Passives",
+      "type": "Passive",
+      "subType": "Global Comms Passive",
+      "color": "Blue",
+      "categorySortOrder": 4,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": null,
+      "description": "Grants +1 Communication bonus to the army (stacks with Comms. Officers)."
+    },
+    {
+      "id": 132,
+      "key": "commander",
+      "name": "Commander",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4E. Global Army, Economy & Special Utility Passives",
+      "type": "Passive",
+      "subType": "Daily Battles Passive",
+      "color": "Green",
+      "categorySortOrder": 4,
+      "colorSortOrder": 5,
+      "ui": {
+        "hex": "#10b981",
+        "bgClass": "bg-emerald-900/75",
+        "borderClass": "border-emerald-500",
+        "textClass": "text-emerald-200"
+      },
+      "stats": null,
+      "description": "Grants the account +1 extra Battle per day (up to a maximum of +2 extra battles per day)."
+    },
+    {
+      "id": 133,
+      "key": "occupation",
+      "name": "Occupation",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4E. Global Army, Economy & Special Utility Passives",
+      "type": "Passive",
+      "subType": "Daily Income Passive",
+      "color": "Green",
+      "categorySortOrder": 4,
+      "colorSortOrder": 5,
+      "ui": {
+        "hex": "#10b981",
+        "bgClass": "bg-emerald-900/75",
+        "borderClass": "border-emerald-500",
+        "textClass": "text-emerald-200"
+      },
+      "stats": null,
+      "description": "The trooper earns +1 Credit (T) every day passively for your account."
+    },
+    {
+      "id": 134,
+      "key": "scavenger",
+      "name": "Scavenger",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4E. Global Army, Economy & Special Utility Passives",
+      "type": "Passive",
+      "subType": "Loot Equipment",
+      "color": "Cyan",
+      "categorySortOrder": 4,
+      "colorSortOrder": 6,
+      "ui": {
+        "hex": "#06b6d4",
+        "bgClass": "bg-cyan-900/75",
+        "borderClass": "border-cyan-400",
+        "textClass": "text-cyan-200"
+      },
+      "stats": null,
+      "description": "Allows the trooper to loot weapons/equipment from fallen enemies or generate bonus post-battle rewards."
+    },
+    {
+      "id": 135,
+      "key": "voodoo_doll",
+      "name": "Voodoo Doll",
+      "aliases": [],
+      "category": "Category 4: Armor, Survival, HP & Utility Passives",
+      "subCategory": "4E. Global Army, Economy & Special Utility Passives",
+      "type": "Passive",
+      "subType": "Curse Equipment",
+      "color": "Cyan",
+      "categorySortOrder": 4,
+      "colorSortOrder": 6,
+      "ui": {
+        "hex": "#06b6d4",
+        "bgClass": "bg-cyan-900/75",
+        "borderClass": "border-cyan-400",
+        "textClass": "text-cyan-200"
+      },
+      "stats": null,
+      "description": "Curses a random enemy trooper at the start of combat, inflicting damage or status penalties remotely."
+    },
+    {
+      "id": 136,
+      "key": "motorcycle",
+      "name": "Motorcycle",
+      "aliases": [],
+      "category": "Category 5: Vehicles",
+      "subCategory": "5. Vehicles",
+      "type": "Vehicle",
+      "subType": "Vehicle, Level 1+",
+      "color": "Blue",
+      "categorySortOrder": 5,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": {
+        "deploymentSlots": 1,
+        "minLevel": 1
+      },
+      "description": "Consumes 1 Deployment Slot. Immediately drives the trooper into close range of the nearest enemy at the start of the fight."
+    },
+    {
+      "id": 137,
+      "key": "light_tank",
+      "name": "Light Tank",
+      "aliases": [],
+      "category": "Category 5: Vehicles",
+      "subCategory": "5. Vehicles",
+      "type": "Vehicle",
+      "subType": "Vehicle, Level 7+",
+      "color": "Blue",
+      "categorySortOrder": 5,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": {
+        "deploymentSlots": 2,
+        "minLevel": 7
+      },
+      "description": "Consumes 2 Deployment Slots. Armors the trooper inside a Light Tank equipped with a Light Cannon (Rocket Launcher equivalent) and a Fixed Machine Gun."
+    },
+    {
+      "id": 138,
+      "key": "heavy_tank",
+      "name": "Heavy Tank",
+      "aliases": [],
+      "category": "Category 5: Vehicles",
+      "subCategory": "5. Vehicles",
+      "type": "Vehicle",
+      "subType": "Vehicle, Level 7+",
+      "color": "Blue",
+      "categorySortOrder": 5,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": {
+        "deploymentSlots": 6,
+        "minLevel": 7,
+        "minSquadDeployment": 8
+      },
+      "description": "Consumes 6 Deployment Slots (requires at least 8 total squad deployment capacity, i.e., at least 4 Scouts). Equipped with a devastating Cannon v.2 (double Infernal Tube payload) and Heavy Machine Gun."
+    },
+    {
+      "id": 139,
+      "key": "helicopter",
+      "name": "Helicopter",
+      "aliases": [],
+      "category": "Category 5: Vehicles",
+      "subCategory": "5. Vehicles",
+      "type": "Vehicle",
+      "subType": "Vehicle, Level 7+",
+      "color": "Blue",
+      "categorySortOrder": 5,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": {
+        "deploymentSlots": 2,
+        "minLevel": 7
+      },
+      "description": "Consumes 2 Deployment Slots. Flies above the battlefield (immune to melee and ground obstacles) with high Speed and a Twin Machine Gun."
+    },
+    {
+      "id": 140,
+      "key": "fighter_jet",
+      "name": "Fighter Jet",
+      "aliases": [],
+      "category": "Category 5: Vehicles",
+      "subCategory": "5. Vehicles",
+      "type": "Vehicle",
+      "subType": "Vehicle, Level 11+",
+      "color": "Blue",
+      "categorySortOrder": 5,
+      "colorSortOrder": 7,
+      "ui": {
+        "hex": "#3b82f6",
+        "bgClass": "bg-blue-900/75",
+        "borderClass": "border-blue-500",
+        "textClass": "text-blue-200"
+      },
+      "stats": {
+        "deploymentSlots": 1,
+        "minLevel": 11
+      },
+      "description": "Air-strike vehicle where the trooper does not stand on the ground; instead, the Fighter Jet repeatedly bombards the entire enemy battlefield with airstrikes until it runs out of fuel."
+    }
+  ]
 }

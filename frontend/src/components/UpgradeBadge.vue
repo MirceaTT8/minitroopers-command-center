@@ -1,3 +1,18 @@
+<template>
+  <span
+    v-if="isReady"
+    class="px-3 py-1 text-xs font-bold text-green-300 bg-green-900/60 border border-green-500 rounded"
+  >
+    [READY] UPGRADE AVAILABLE
+  </span>
+  <span
+    v-else
+    class="px-3 py-1 text-xs font-bold text-red-300 bg-red-900/60 border border-red-500 rounded"
+  >
+    [LOCKED] NEED {{ Math.max(0, upgradeCost - credits) }} T
+  </span>
+</template>
+
 <script setup>
 import { computed } from 'vue'
 
@@ -12,20 +27,7 @@ const props = defineProps({
   },
 })
 
-const isReady = computed(() => props.credits >= props.upgradeCost)
+const isReady = computed(
+  () => props.upgradeCost > 0 && props.credits >= props.upgradeCost
+)
 </script>
-
-<template>
-  <span
-    v-if="isReady"
-    class="inline-flex items-center px-3 py-1 text-xs font-extrabold tracking-wide rounded-md bg-green-950/90 text-green-400 border border-green-500/70"
-  >
-    [READY] UPGRADE AVAILABLE
-  </span>
-  <span
-    v-else
-    class="inline-flex items-center px-3 py-1 text-xs font-extrabold tracking-wide rounded-md bg-red-950/90 text-red-300 border border-red-500/60"
-  >
-    [LOCKED] NEED CREDITS
-  </span>
-</template>

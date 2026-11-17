@@ -1,41 +1,49 @@
 #!/bin/bash
 
-# Define your accounts in a "username:password" format inside secret.cfg.
-# If an account has no password, leave it blank after the colon (e.g., "account3:").
+prefix="$(cd "$(dirname "$0")" && pwd)"
+scrape_flag=""
 
-prefix="$(dirname "$0")"
-cd "$prefix" || exit 1
-ext="com"
-mode_flag="$1"
+# 1. Parse CLI flags
+for arg in "$@"; do
+    case "$arg" in
+        --scrape-only|-s|--sync)
+            scrape_flag="--scrape-only"
+            ;;
+    esac
+done
 
-echo "Starting automated runs for all accounts..."
-
-if [[ -f "./secret.cfg" ]]; then
-    source "./secret.cfg"
+# 2. Locate secret.cfg (checks scripts/ first, then config/)
+if [[ -f "$prefix/secret.cfg" ]]; then
+    secret_file="$prefix/secret.cfg"
+elif [[ -f "$prefix/../config/secret.cfg" ]]; then
+    secret_file="$prefix/../config/secret.cfg"
 else
-    echo "Error: $prefix/secret.cfg not found!"
+    echo "error: secret.cfg not found in $prefix or $prefix/../config"
     exit 1
 fi
 
-# Loop through each account entry
+# 3. Source secret.cfg and extract all "user:pass" pairs
+source "$secret_file"
+
+# If secret.cfg defines accounts=("user1:pass1" "user2:pass2"), use it;
+# otherwise extract all quoted "user:pass" strings directly from the file.
+if [[ ${#accounts[@]} -eq 0 ]]; then
+    mapfile -t accounts < <(grep -Eo '"[^"]+:[^"]+"' "$secret_file" | tr -d '"')
+fi
+
+if [[ ${#accounts[@]} -eq 0 ]]; then
+    echo "error: No \"user:pass\" accounts found in $secret_file"
+    exit 1
+fi
+
+# 4. Run troopers.sh for each account, forwarding --scrape-only if enabled
 for entry in "${accounts[@]}"; do
-    # Split the string at the colon to get the username and password
-    username="${entry%%:*}"
-    password="${entry#*:}"
+    user="${entry%%:*}"
+    pass="${entry#*:}"
 
-    echo "------------------------------------------------"
-    echo "Executing bot for account: $username"
-
-    # Run the main bot script (passes mode_flag such as --sync-only if provided)
-    ./troopers.sh "$username" "$password" "" "$mode_flag"
-
-    # 2-second delay between accounts (1s in sync-only mode) to prevent server blocks
-    if [[ "$mode_flag" == "--sync-only" ]]; then
-        sleep 1
+    if [[ -n "$scrape_flag" ]]; then
+        "$prefix/troopers.sh" "$scrape_flag" "$user" "$pass"
     else
-        sleep 2
+        "$prefix/troopers.sh" "$user" "$pass"
     fi
 done
-
-echo "------------------------------------------------"
-echo "All accounts processed successfully!"
