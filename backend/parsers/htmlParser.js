@@ -3,6 +3,7 @@ const path = require('path');
 const cheerio = require('cheerio');
 
 const CONFIG_DIR = path.join(__dirname, '..', 'config');
+const SCRIPTS_DIR = path.join(__dirname, '..', 'scripts');
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const RAW_HTML_DIR = path.join(DATA_DIR, 'raw_html');
 const CACHE_FILE = path.join(DATA_DIR, 'accountsCache.json');
@@ -101,6 +102,37 @@ for (const [aliasName, targetKey] of Object.entries(SERVER_NAME_ALIASES)) {
   }
 }
 
+// Dynamically read accounts_recruiter=( "berbelita1:berbelita" ... ) from secret.cfg
+function loadRecruitersMapFromSecretCfg() {
+  const recruitersMap = new Map();
+  const candidatePaths = [
+    path.join(SCRIPTS_DIR, 'secret.cfg'),
+    path.join(CONFIG_DIR, 'secret.cfg')
+  ];
+
+  for (const secretPath of candidatePaths) {
+    if (!fs.existsSync(secretPath)) continue;
+    const content = fs.readFileSync(secretPath, 'utf-8');
+
+    // Match the accounts_recruiter=( ... ) array block
+    const blockMatch = content.match(/accounts_recruiter\s*=\s*\(([\s\S]*?)\)/);
+    if (!blockMatch) continue;
+
+    const blockBody = blockMatch[1];
+    const pairRegex = /["']?([A-Za-z0-9_.-]+)\s*:\s*([A-Za-z0-9_.-]+)["']?/g;
+    let match;
+    while ((match = pairRegex.exec(blockBody)) !== null) {
+      const accountName = match[1].trim().toLowerCase();
+      const recruiterName = match[2].trim();
+      if (accountName && recruiterName) {
+        recruitersMap.set(accountName, recruiterName);
+      }
+    }
+  }
+
+  return recruitersMap;
+}
+
 function cleanHtmlEntities(str) {
   return String(str || '')
     .replace(/&#39;|&rsquo;/g, "'")
@@ -117,8 +149,10 @@ function findSkillInDictionary(rawName, fallbackDesc = '') {
   const direct = skillLookupMap.get(cleaned.toLowerCase());
   if (direct) return direct;
 
-  // Normalize punctuation/hyphens and retry
-  const normalizedKey = cleaned.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const normalizedKey = cleaned
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
   if (skillLookupMap.has(normalizedKey)) {
     return skillLookupMap.get(normalizedKey);
   }
@@ -166,12 +200,6 @@ function extractUpgradeChoicesFromHtml(htmlContent) {
     });
   }
 
-  // 1. Primary MiniTroopers <table class="levelup"> .box8 parser:
-  // <div class="box8" onclick="if(confirm('Confirm this action?')) document.location = '/levelup/0?skill=7'">
-  //   <div class="levelskill" style="background: url('/img/skills.png') -210px 0px"></div>
-  //   <h2>Saboteur</h2>
-  //   <div class="s">...</div>
-  // </div>
   $('table.levelup .box8, div.box8').each((_, box) => {
     const rawName = $(box).find('h2').first().text();
     const rawDesc = $(box).find('div.s').first().text();
@@ -192,12 +220,9 @@ function extractUpgradeChoicesFromHtml(htmlContent) {
     }
   });
 
-  // 2. Fallback: Check any <a href="/levelup/0?skill=..."> links if present
   $('a[href*="/levelup/"]').each((_, a) => {
     const href = $(a).attr('href') || null;
-    const rawName =
-      $(a).find('h2').text() ||
-      $(a).text();
+    const rawName = $(a).find('h2').text() || $(a).text();
     if (rawName) {
       pushChoice(rawName, href);
     }
@@ -220,12 +245,14 @@ function readPreviousCachedAccount(accountId) {
   }
 }
 
-function parseAccountFolder(accountId) {
+function parseAccountFolder(accountId, recruitersMap = null) {
+  const activeRecruitersMap = recruitersMap || loadRecruitersMapFromSecretCfg();
   const accountDir = path.join(RAW_HTML_DIR, accountId);
   const t0Path = path.join(accountDir, 't0.html');
   const t0StatsBackupPath = path.join(accountDir, 't0_stats.html');
   const hqPath = path.join(accountDir, 'hq.html');
   const levelup0Path = path.join(accountDir, 'levelup0.html');
+  const recruiterTxtPath = path.join(accountDir, 'recruiter.txt');
 
   if (!fs.existsSync(t0Path) && !fs.existsSync(levelup0Path)) {
     return null;
@@ -235,7 +262,6 @@ function parseAccountFolder(accountId) {
     ? fs.readFileSync(t0Path, 'utf-8')
     : fs.readFileSync(levelup0Path, 'utf-8');
 
-  // If t0.html is currently the <table class="levelup"> screen, read skills/AI config from t0_stats.html if available
   const statsSheetHtml =
     !primaryT0Html.includes('class="tablesheet"') &&
     fs.existsSync(t0StatsBackupPath)
@@ -252,6 +278,15 @@ function parseAccountFolder(accountId) {
   const $stats = cheerio.load(statsSheetHtml);
   const previousCache = readPreviousCachedAccount(accountId);
 
+  // Resolve Recruiter from secret.cfg (accounts_recruiter) or fallback to recruiter.txt / previous cache
+  let recruiter = activeRecruitersMap.get(accountId.toLowerCase()) || null;
+  if (!recruiter && fs.existsSync(recruiterTxtPath)) {
+    recruiter = fs.readFileSync(recruiterTxtPath, 'utf-8').trim() || null;
+  }
+  if (!recruiter && previousCache?.recruiter) {
+    recruiter = previousCache.recruiter;
+  }
+
   // 1. Parse Raid Phase from hq.html
   let raidPhase = null;
   if (fs.existsSync(hqPath)) {
@@ -262,7 +297,7 @@ function parseAccountFolder(accountId) {
     }
   }
 
-  // 2. Parse Credits & Army Power (present in .home on both /t/0 and /levelup/0)
+  // 2. Parse Credits & Army Power
   const creditsText =
     $primary('div.money').first().text().replace(/[^0-9]/g, '') ||
     $stats('div.money').first().text().replace(/[^0-9]/g, '');
@@ -273,7 +308,7 @@ function parseAccountFolder(accountId) {
   const credits = creditsText ? parseInt(creditsText, 10) : 0;
   const power = powerText ? parseInt(powerText, 10) : 0;
 
-  // 3. Parse Soldier Name & Avatar URL from stats sheet, levelup table, or left My Troopers panel (#swf_tr_view)
+  // 3. Parse Soldier Name & Avatar URL
   const soldierImg =
     $stats('ul.skills li.soldier img').first().length > 0
       ? $stats('ul.skills li.soldier img').first()
@@ -309,8 +344,6 @@ function parseAccountFolder(accountId) {
   let upgradeCost = costMatch ? parseInt(costMatch[1], 10) : 0;
   let level = upgradeCost ? costToLevelMap[String(upgradeCost)] || null : null;
 
-  // If the soldier is on the <table class="levelup"> screen ("Joeralund has advanced to level 6!"),
-  // set their level from that message and look up the next level's upgradeCost from levelToCostMap!
   if (advancedMatch) {
     const advancedLevel = parseInt(advancedMatch[2], 10);
     if (!isNaN(advancedLevel)) {
@@ -328,7 +361,7 @@ function parseAccountFolder(accountId) {
     upgradeCost = levelToCostMap[String(level)];
   }
 
-  // 5. Parse Unlocked Skills from stats sheet (or preserve previous cache if currently on levelup screen)
+  // 5. Parse Unlocked Skills
   const unlockedSkills = [];
   const mainSkillsList = $stats('ul.skills')
     .filter((_, ul) => $stats(ul).find('li.soldier').length > 0)
@@ -366,13 +399,13 @@ function parseAccountFolder(accountId) {
 
   unlockedSkills.sort((a, b) => (a.id || 999) - (b.id || 999));
 
-  // 6. Parse Available Upgrade Choices (.box8 inside levelup0.html or t0.html)
+  // 6. Parse Available Upgrade Choices
   let availableUpgrades = extractUpgradeChoicesFromHtml(levelupHtml);
   if (availableUpgrades.length === 0) {
     availableUpgrades = extractUpgradeChoicesFromHtml(primaryT0Html);
   }
 
-  // 7. Parse the 5 AI Config Dropdowns (or preserve previous cache if on levelup screen)
+  // 7. Parse the 5 AI Config Dropdowns
   const hasConfigForm = $stats('form#config').length > 0;
   const aiConfig = hasConfigForm
     ? {
@@ -396,6 +429,7 @@ function parseAccountFolder(accountId) {
   return {
     id: accountId,
     name: accountId,
+    recruiter,
     raidPhase,
     credits,
     power,
@@ -425,6 +459,8 @@ function parseAllAccounts() {
     return [];
   }
 
+  const recruitersMap = loadRecruitersMapFromSecretCfg();
+
   const accountFolders = fs
     .readdirSync(RAW_HTML_DIR, { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
@@ -432,7 +468,7 @@ function parseAllAccounts() {
 
   const accounts = [];
   for (const folder of accountFolders) {
-    const accountData = parseAccountFolder(folder);
+    const accountData = parseAccountFolder(folder, recruitersMap);
     if (accountData) {
       accounts.push(accountData);
     }
@@ -447,6 +483,16 @@ function getCachedOrParsedAccounts() {
     try {
       const cached = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8'));
       if (Array.isArray(cached) && cached.length > 0) {
+        // Always refresh recruiter field from secret.cfg in case secret.cfg was edited
+        const recruitersMap = loadRecruitersMapFromSecretCfg();
+        for (const acc of cached) {
+          const mappedRecruiter = recruitersMap.get(acc.id.toLowerCase());
+          if (mappedRecruiter) {
+            acc.recruiter = mappedRecruiter;
+          } else if (acc.recruiter === undefined) {
+            acc.recruiter = null;
+          }
+        }
         return cached;
       }
     } catch (_) {

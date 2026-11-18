@@ -25,14 +25,20 @@ else
     exit 1
 fi
 
-# 3. Source secret.cfg and extract all "user:pass" pairs
+# 3. Source secret.cfg (populates accounts and accounts_recruiter arrays)
 source "$secret_file"
 
+# Fallback if secret.cfg has raw "user:pass" strings outside accounts=()
 if [[ ${#accounts[@]} -eq 0 ]]; then
-    mapfile -t raw_accounts < <(grep -Eo '"[^"]+:[^"]+"' "$secret_file")
-    for item in "${raw_accounts[@]}"; do
+    stripped_content=$(awk '
+        /accounts_recruiter[ \t]*=[ \t]*\(/ { in_rec=1; next }
+        in_rec && /\)/ { in_rec=0; next }
+        !in_rec { print }
+    ' "$secret_file")
+    while IFS= read -r item; do
+        [[ -z "$item" ]] && continue
         accounts+=("${item//\"/}")
-    done
+    done < <(echo "$stripped_content" | grep -Eo '"[^"]+:[^"]+"')
 fi
 
 if [[ ${#accounts[@]} -eq 0 ]]; then

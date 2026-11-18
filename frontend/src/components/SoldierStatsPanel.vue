@@ -12,6 +12,9 @@
         <p class="text-xs text-yellow-400 font-semibold">
           Slot #0 • Level {{ soldier.level ?? '?' }} • Army Power {{ account.power }}
         </p>
+        <p class="text-xs text-indigo-300 font-semibold mt-1">
+          Recruiter Team: {{ account.recruiter || 'Unassigned' }}
+        </p>
       </div>
     </div>
 
@@ -19,6 +22,10 @@
       Soldier Stats &amp; AI Targeting Config
     </h3>
     <div class="space-y-2.5 text-sm">
+      <div class="flex justify-between">
+        <span class="text-slate-400">Recruiter:</span>
+        <span class="font-bold text-indigo-300">{{ account.recruiter || 'Unassigned' }}</span>
+      </div>
       <div class="flex justify-between">
         <span class="text-slate-400">Favourite Weapon:</span>
         <span class="font-bold text-white">{{ soldier.aiConfig.favouriteWeapon }}</span>

@@ -82,9 +82,9 @@
         [AI ADVISOR - PHASE 2 SCOPE]
       </div>
       <p class="text-xs text-slate-300 leading-relaxed">
-        In Phase 2, Python FastAPI will score these upgrade options against your Recruiter's Raid
-        Phase {{ account.raidPhase ?? '?' }} global passives and {{ soldier.name }}'s weapon
-        archetype.
+        In Phase 2, Python FastAPI will score these upgrade options against Recruiter
+        <strong>{{ account.recruiter || 'Unassigned' }}</strong>'s Raid Phase
+        {{ account.raidPhase ?? '?' }} global passives and {{ soldier.name }}'s weapon archetype.
       </p>
     </div>
   </div>

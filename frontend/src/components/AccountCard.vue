@@ -11,11 +11,30 @@
     "
   >
     <div>
-      <div class="flex justify-between items-center mb-3">
-        <h2 class="text-xl font-bold text-yellow-400">{{ account.name }}</h2>
-        <div class="flex items-center gap-2 text-xs text-slate-400">
+      <div class="flex justify-between items-start gap-2 mb-3">
+        <div>
+          <h2 class="text-xl font-bold text-yellow-400 leading-tight">{{ account.name }}</h2>
+          <div class="mt-1 flex flex-wrap items-center gap-1.5">
+            <span
+              v-if="account.recruiter"
+              class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-950/90 text-indigo-300 border border-indigo-500/60"
+            >
+              Recruiter: {{ account.recruiter }}
+            </span>
+            <span
+              v-else
+              class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-900 text-slate-400 border border-slate-700"
+            >
+              Recruiter: Unassigned
+            </span>
+          </div>
+        </div>
+
+        <div class="flex flex-col items-end text-xs text-slate-400 shrink-0">
           <span>Power: <strong class="text-white">{{ account.power }}</strong></span>
-          <span v-if="account.raidPhase">• Raid Phase {{ account.raidPhase }}</span>
+          <span v-if="account.raidPhase" class="text-yellow-400/90 font-semibold mt-0.5">
+            Raid Phase {{ account.raidPhase }}
+          </span>
         </div>
       </div>
 

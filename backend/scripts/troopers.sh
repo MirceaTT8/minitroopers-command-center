@@ -11,6 +11,10 @@ function saveAccountHtml {
     $curl --output "$account_dir/hq.html" "$site/hq"
     $curl --output "$account_dir/t0.html" "$site/t/0"
 
+    if [[ -n "$recruiter_name" ]]; then
+        echo "$recruiter_name" > "$account_dir/recruiter.txt"
+    fi
+
     if grep -q 'class="levelup"' "$account_dir/t0.html"; then
         echo "  [Sync] Account $login_original has a pending level-up choice on /t/0!"
         cp "$account_dir/t0.html" "$account_dir/levelup0.html"
@@ -23,6 +27,10 @@ function saveAccountHtml {
 function requestSoldierUpgrade {
     local account_dir="$data_dir/$login_lower"
     mkdir -p "$account_dir"
+
+    if [[ -n "$recruiter_name" ]]; then
+        echo "$recruiter_name" > "$account_dir/recruiter.txt"
+    fi
 
     echo "  [Upgrade] Fetching /t/0 for $login_original..."
     $curl --output "$account_dir/t0.html" "$site/t/0"
@@ -138,7 +146,7 @@ function mission {
                 break
             fi
 
-            echo -n "  Running mission ($type) - attempt $i/3... "
+            echo -n "  Running mission ($type) - attempt$i/3... "
             $curl "$site/b/mission?t=$type" > /dev/null
 
             $curl --output "$tmp_hq" "$site/hq"
@@ -353,37 +361,74 @@ function printSummary {
 
     echo "========================================="
     echo "       SUMMARY FOR: $login_original"
+    [[ -n "$recruiter_name" ]] && echo "       RECRUITER  : $recruiter_name"
     echo "========================================="
     echo "Battles Won     : $bat_wins/$bat_total ($bat_pct%)"
     echo "Missions Won    : $total_m_wins/3 missions completed"
-    echo "  - Exterminate : $ext_wins won ($ext_loss failed, $ext_tot attempts)"
-    echo "  - Infiltrate  : $inf_wins won ($inf_loss failed, $inf_tot attempts)"
-    echo "  - Epic        : $epic_wins won ($epic_loss failed, $epic_tot attempts)"
+    echo "  - Exterminate : $ext_wins won ($ext_loss failed,$ext_tot attempts)"
+    echo "  - Infiltrate  : $inf_wins won ($inf_loss failed,$inf_tot attempts)"
+    echo "  - Epic        : $epic_wins won ($epic_loss failed,$epic_tot attempts)"
     echo "Last Raid Level : Raid Phase $raid_phase"
     echo "========================================="
 }
 
+# =========================================================================
+# SECRET.CFG HELPERS (ACCOUNTS & ACCOUNTS_RECRUITER)
+# =========================================================================
+function locateSecretFile {
+    if [[ -f "$prefix/secret.cfg" ]]; then
+        echo "$prefix/secret.cfg"
+    elif [[ -f "$prefix/../config/secret.cfg" ]]; then
+        echo "$prefix/../config/secret.cfg"
+    else
+        echo ""
+    fi
+}
+
+function loadSecretArrays {
+    local sfile="$(locateSecretFile)"
+    if [[ -n "$sfile" && -f "$sfile" ]]; then
+        source "$sfile"
+        # Fallback if secret.cfg has raw "user:pass" strings outside accounts=()
+        if [[ ${#accounts[@]} -eq 0 ]]; then
+            local stripped_content=""
+            stripped_content=$(awk '
+                /accounts_recruiter[ \t]*=[ \t]*\(/ { in_rec=1; next } in_rec && /\)/ { in_rec=0; next }
+                !in_rec { print }
+            ' "$sfile")
+            while IFS= read -r raw_item; do
+                [[ -z "$raw_item" ]] && continue
+                accounts+=("${raw_item//\"/}")
+            done < <(echo "$stripped_content" | grep -Eo '"[^"]+:[^"]+"')
+        fi
+    fi
+}
+
 function lookupPasswordFromSecretCfg {
     local target_user_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-    local secret_file=""
+    for item in "${accounts[@]}"; do
+        local clean="${item//\"/}"
+        local entry_user=$(echo "${clean%%:*}" | tr '[:upper:]' '[:lower:]')
+        local entry_pass="${clean#*:}"
+        if [[ "$entry_user" == "$target_user_lower" ]]; then
+            echo "$entry_pass"
+            return 0
+        fi
+    done
+    return 1
+}
 
-    if [[ -f "$prefix/secret.cfg" ]]; then
-        secret_file="$prefix/secret.cfg"
-    elif [[ -f "$prefix/../config/secret.cfg" ]]; then
-        secret_file="$prefix/../config/secret.cfg"
-    fi
-
-    if [[ -n "$secret_file" && -f "$secret_file" ]]; then
-        while IFS= read -r raw_entry; do
-            local entry="${raw_entry//\"/}"
-            local entry_user=$(echo "${entry%%:*}" | tr '[:upper:]' '[:lower:]')
-            local entry_pass="${entry#*:}"
-            if [[ "$entry_user" == "$target_user_lower" ]]; then
-                echo "$entry_pass"
-                return 0
-            fi
-        done < <(grep -Eo '"[^"]+:[^"]+"' "$secret_file")
-    fi
+function lookupRecruiterFromSecretCfg {
+    local target_user_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+    for item in "${accounts_recruiter[@]}"; do
+        local clean="${item//\"/}"
+        local entry_user=$(echo "${clean%%:*}" | tr '[:upper:]' '[:lower:]')
+        local entry_rec="${clean#*:}"
+        if [[ "$entry_user" == "$target_user_lower" ]]; then
+            echo "$entry_rec"
+            return 0
+        fi
+    done
     return 1
 }
 
@@ -414,11 +459,18 @@ function runSingleAccount {
     [[ -n "$custom_friend" ]] && friend="$custom_friend"
 
     login_lower=$(echo "$login_original" | tr '[:upper:]' '[:lower:]')
+    recruiter_name="$(lookupRecruiterFromSecretCfg "$login_original")"
+
     site="https://$login_lower.trooperstest.gued.es"
     cookie_file="$(mktemp -t "$login_lower.XXXXXX" --suffix='.cookie')"
-    curl="curl -L --silent --cookie $cookie_file --cookie-jar $cookie_file"
+    curl="curl -L --silent --cookie $cookie_file --cookie-jar$cookie_file"
 
-    echo ">>> Processing account: $login_original"
+    if [[ -n "$recruiter_name" ]]; then
+        echo ">>> Processing account: $login_original (Recruiter:$recruiter_name)"
+    else
+        echo ">>> Processing account: $login_original"
+    fi
+
     authenticate
 
     if [[ "$request_upgrade" == "true" ]]; then
@@ -459,16 +511,19 @@ report="upgradable"
 scrape_only="false"
 request_upgrade="false"
 select_upgrade_url=""
+recruiter_name=""
 
 for command in 'grep' 'curl' 'awk' 'tr'; do
     if ! command -v "$command" > /dev/null; then
-        echo "error: $0 needs $command to execute"
+        echo "error: $0 needs$command to execute"
         exit 2
     fi
 done
 
 [[ -f "$prefix/troopers.cfg" ]] && source "$prefix/troopers.cfg"
 [[ -f "$prefix/$ext.culture" ]] && source "$prefix/$ext.culture"
+
+loadSecretArrays
 
 args=()
 while [[ $# -gt 0 ]]; do
@@ -504,28 +559,18 @@ if [[ ${#args[@]} -gt 0 ]]; then
     exit 0
 fi
 
-if [[ -f "$prefix/secret.cfg" ]]; then
-    secret_file="$prefix/secret.cfg"
-elif [[ -f "$prefix/../config/secret.cfg" ]]; then
-    secret_file="$prefix/../config/secret.cfg"
-else
+if [[ ${#accounts[@]} -eq 0 ]]; then
     echo "Usage: $0 [--scrape-only] [--request-upgrade] [<login> [password] [friend]]"
+    echo "Or configure accounts=(\"user:pass\") inside secret.cfg"
     exit 1
 fi
 
-mapfile -t raw_entries < <(grep -Eo '"[^"]+:[^"]+"' "$secret_file")
-
-if [[ ${#raw_entries[@]} -eq 0 ]]; then
-    echo "error: No \"user:pass\" entries found in $secret_file"
-    exit 1
-fi
-
-for raw_item in "${raw_entries[@]}"; do
+for raw_item in "${accounts[@]}"; do
     entry="${raw_item//\"/}"
     acc_user="${entry%%:*}"
     acc_pass="${entry#*:}"
     runSingleAccount "$acc_user" "$acc_pass"
 done
 
-echo "Finished processing all ${#raw_entries[@]} accounts!"
+echo "Finished processing all ${#accounts[@]} accounts!"
 exit 0

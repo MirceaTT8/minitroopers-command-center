@@ -1,7 +1,7 @@
 <template>
   <div v-if="account && soldier" class="min-h-screen bg-slate-900 text-white p-8">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-      <div class="flex items-center gap-4">
+      <div class="flex flex-wrap items-center gap-3">
         <button
           @click="$router.push('/')"
           class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-sm font-bold cursor-pointer"
@@ -11,6 +11,11 @@
         <h1 class="text-2xl font-bold text-sky-400">
           {{ account.name }} — {{ soldier.name }}'s Stats Sheet (Lvl {{ soldier.level ?? '?' }})
         </h1>
+        <span
+          class="px-2.5 py-1 rounded text-xs font-bold bg-indigo-950/90 text-indigo-300 border border-indigo-500/60"
+        >
+          Recruiter: {{ account.recruiter || 'Unassigned' }}
+        </span>
       </div>
 
       <button
