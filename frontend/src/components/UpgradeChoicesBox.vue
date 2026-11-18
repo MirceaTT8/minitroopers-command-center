@@ -25,7 +25,7 @@
       </button>
     </div>
 
-    <!-- Empty state before upgrade is requested or if no options are unlocked yet -->
+    <!-- Empty State -->
     <div
       v-if="!soldier.availableUpgrades || soldier.availableUpgrades.length === 0"
       class="bg-slate-900/80 border border-slate-700 rounded-lg p-5 text-center text-slate-300 mb-4"
@@ -43,9 +43,20 @@
       <div
         v-for="opt in soldier.availableUpgrades"
         :key="opt.key"
-        class="p-4 rounded-lg border flex flex-col justify-between"
-        :class="getColorClasses(opt.color)"
+        class="p-4 rounded-lg border flex flex-col justify-between relative"
+        :class="[
+          getColorClasses(opt.color),
+          isRecommended(opt) ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-500/20' : ''
+        ]"
       >
+        <!-- Recommended Badge Ribbon -->
+        <div
+          v-if="isRecommended(opt)"
+          class="absolute -top-3 right-3 bg-yellow-500 text-black font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide shadow"
+        >
+          #1 Recommended
+        </div>
+
         <div>
           <div class="flex items-center justify-between gap-2 mb-1">
             <span class="text-xs font-bold uppercase px-2 py-0.5 rounded bg-black/30">
@@ -76,22 +87,57 @@
       </div>
     </div>
 
-    <!-- Phase 2 AI Strategy Slot -->
-    <div class="bg-blue-950/60 p-4 rounded-lg border border-sky-400">
-      <div class="text-xs font-bold text-sky-400 mb-1">
-        [AI ADVISOR - PHASE 2 SCOPE]
+    <!-- AI Advisor Recommendations Panel -->
+    <div
+      v-if="soldier.aiAdvice"
+      class="bg-slate-900 p-5 rounded-xl border border-sky-500 shadow-xl"
+    >
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded text-xs font-bold bg-sky-600 text-white">
+            AI ADVISOR RECOMMENDATION
+          </span>
+          <span
+            class="px-2 py-0.5 rounded text-xs font-bold border"
+            :class="
+              soldier.aiAdvice.decisionTier?.startsWith('TIER_1')
+                ? 'bg-purple-950 text-purple-300 border-purple-500'
+                : 'bg-emerald-950 text-emerald-300 border-emerald-500'
+            "
+          >
+            {{ soldier.aiAdvice.decisionTierLabel || 'Tier 2: Individual Synergy' }}
+          </span>
+        </div>
+        <span class="text-xs text-sky-400 font-mono">
+          Detected Archetype: <strong>{{ soldier.aiAdvice.archetype?.name }}</strong>
+        </span>
       </div>
-      <p class="text-xs text-slate-300 leading-relaxed">
-        In Phase 2, Python FastAPI will score these upgrade options against Recruiter
-        <strong>{{ account.recruiter || 'Unassigned' }}</strong>'s Raid Phase
-        {{ account.raidPhase ?? '?' }} global passives and {{ soldier.name }}'s weapon archetype.
-      </p>
+
+      <div class="bg-slate-950 p-4 rounded-lg border border-slate-800 mb-3">
+        <p class="text-sm font-bold text-yellow-300 mb-1">
+          Top Recommendation: {{ soldier.aiAdvice.recommendedSkill || 'No upgrade pending' }}
+          <span v-if="soldier.aiAdvice.recommendedScore" class="text-xs text-slate-400 font-mono ml-2">
+            (Score: {{ soldier.aiAdvice.recommendedScore }})
+          </span>
+        </p>
+        <div class="text-xs text-slate-300 space-y-1">
+          <p v-for="(reason, idx) in soldier.aiAdvice.reasons" :key="idx" class="flex items-start gap-1.5">
+            <span class="text-sky-400 font-bold">•</span>
+            <span>{{ reason }}</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="text-[11px] text-slate-400 font-mono space-y-0.5">
+        <p>{{ soldier.aiAdvice.recruiterSummary }}</p>
+        <p class="text-yellow-400/90 font-semibold">{{ soldier.aiAdvice.topClassNeeds }}</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   account: {
     type: Object,
     required: true,
@@ -111,6 +157,13 @@ defineProps({
 })
 
 defineEmits(['request-upgrade', 'select-upgrade'])
+
+function isRecommended(opt) {
+  return (
+    props.soldier.aiAdvice?.recommendedOptionKey &&
+    opt.key === props.soldier.aiAdvice.recommendedOptionKey
+  )
+}
 
 const COLOR_STYLE_MAP = {
   Gray: 'bg-zinc-700/80 border-zinc-400 text-zinc-200',

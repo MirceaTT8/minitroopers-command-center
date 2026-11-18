@@ -463,7 +463,7 @@ function runSingleAccount {
 
     site="https://$login_lower.trooperstest.gued.es"
     cookie_file="$(mktemp -t "$login_lower.XXXXXX" --suffix='.cookie')"
-    curl="curl -L --silent --cookie $cookie_file --cookie-jar$cookie_file"
+    curl="curl -L --silent --cookie $cookie_file --cookie-jar "$cookie_file""
 
     if [[ -n "$recruiter_name" ]]; then
         echo ">>> Processing account: $login_original (Recruiter:$recruiter_name)"

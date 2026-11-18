@@ -8,6 +8,9 @@ const DATA_DIR = path.join(__dirname, '..', 'data');
 const RAW_HTML_DIR = path.join(DATA_DIR, 'raw_html');
 const CACHE_FILE = path.join(DATA_DIR, 'accountsCache.json');
 
+// Add at the top of backend/parsers/htmlParser.js:
+const { attachAiAdviceToAccounts } = require('../services/strategyEngine');
+
 const skillsDictionaryRaw = JSON.parse(
   fs.readFileSync(path.join(CONFIG_DIR, 'skillsDictionary.json'), 'utf-8')
 );
@@ -474,8 +477,11 @@ function parseAllAccounts() {
     }
   }
 
-  fs.writeFileSync(CACHE_FILE, JSON.stringify(accounts, null, 2), 'utf-8');
-  return accounts;
+  // Attach AI advice & recruiter raid pool metrics across all accounts
+  const enrichedAccounts = attachAiAdviceToAccounts(accounts);
+
+  fs.writeFileSync(CACHE_FILE, JSON.stringify(enrichedAccounts, null, 2), 'utf-8');
+  return enrichedAccounts;
 }
 
 function getCachedOrParsedAccounts() {
@@ -483,7 +489,6 @@ function getCachedOrParsedAccounts() {
     try {
       const cached = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8'));
       if (Array.isArray(cached) && cached.length > 0) {
-        // Always refresh recruiter field from secret.cfg in case secret.cfg was edited
         const recruitersMap = loadRecruitersMapFromSecretCfg();
         for (const acc of cached) {
           const mappedRecruiter = recruitersMap.get(acc.id.toLowerCase());
@@ -493,7 +498,8 @@ function getCachedOrParsedAccounts() {
             acc.recruiter = null;
           }
         }
-        return cached;
+        // Re-attach AI advice in case strategyEngine rules were updated
+        return attachAiAdviceToAccounts(cached);
       }
     } catch (_) {
       return parseAllAccounts();
@@ -501,7 +507,6 @@ function getCachedOrParsedAccounts() {
   }
   return parseAllAccounts();
 }
-
 module.exports = {
   parseAccountFolder,
   parseAllAccounts,
