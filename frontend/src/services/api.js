@@ -54,3 +54,17 @@ export async function selectSoldierUpgrade(accountId, selectUrl) {
   }
   return data
 }
+
+export async function fetchAiUpgradeAdvice(accountId) {
+  const response = await fetch(
+    `/api/account/${encodeURIComponent(accountId)}/ai-advice`,
+    {
+      method: 'POST',
+    }
+  )
+  const data = await response.json()
+  if (!response.ok) {
+    throw new Error(data.details || data.error || 'AI advice request failed')
+  }
+  return data
+}

@@ -10,6 +10,9 @@ const {
   getCachedOrParsedAccounts
 } = require('./parsers/htmlParser');
 
+
+const { getUpgradeAdviceWithLLM } = require('./services/llmAdvisorService');
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = '0.0.0.0';
@@ -40,6 +43,30 @@ function sanitizeBashScripts() {
 }
 
 sanitizeBashScripts();
+
+
+// Add before the JSON 404 Catch-All:
+// POST /api/account/:id/ai-advice - Calls LLM with soldier + recruiter roster + strategy rules
+app.post('/api/account/:id/ai-advice', async (req, res) => {
+  try {
+    const accounts = getCachedOrParsedAccounts();
+    const targetId = req.params.id.toLowerCase();
+    const account = accounts.find((acc) => acc.id.toLowerCase() === targetId);
+
+    if (!account) {
+      return res.status(404).json({ error: `Account '${req.params.id}' not found` });
+    }
+
+    const advice = await getUpgradeAdviceWithLLM(account, accounts);
+    res.json(advice);
+  } catch (err) {
+    console.error('AI advice error:', err);
+    res.status(500).json({
+      error: 'Failed to generate AI upgrade advice',
+      details: err.message,
+    });
+  }
+});
 
 // GET /api/accounts - Parses raw_html folders and returns all accounts
 app.get('/api/accounts', (req, res) => {
