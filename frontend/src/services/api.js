@@ -55,16 +55,20 @@ export async function selectSoldierUpgrade(accountId, selectUrl) {
   return data
 }
 
-export async function fetchAiUpgradeAdvice(accountId) {
+export async function fetchAiUpgradeAdvice(accountId, { strictLlm = false } = {}) {
   const response = await fetch(
     `/api/account/${encodeURIComponent(accountId)}/ai-advice`,
     {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ strictLlm }),
     }
   )
   const data = await response.json()
   if (!response.ok) {
-    throw new Error(data.details || data.error || 'AI advice request failed')
+    const err = new Error(data.details || data.error || 'AI advice request failed')
+    err.code = data.errorCode || (response.status === 429 ? 'ALL_MODELS_QUOTA_EXHAUSTED' : 'LLM_ERROR')
+    throw err
   }
   return data
 }

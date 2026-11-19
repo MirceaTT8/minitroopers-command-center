@@ -57,17 +57,18 @@ app.post('/api/account/:id/ai-advice', async (req, res) => {
       return res.status(404).json({ error: `Account '${req.params.id}' not found` });
     }
 
-    const advice = await getUpgradeAdviceWithLLM(account, accounts);
+    const strictLlm = Boolean(req.body?.strictLlm);
+    const advice = await getUpgradeAdviceWithLLM(account, accounts, { strictLlm });
     res.json(advice);
   } catch (err) {
     console.error('AI advice error:', err);
-    res.status(500).json({
+    res.status(err.statusCode || 503).json({
       error: 'Failed to generate AI upgrade advice',
+      errorCode: err.code || 'LLM_ERROR',
       details: err.message,
     });
   }
 });
-
 // GET /api/accounts - Parses raw_html folders and returns all accounts
 app.get('/api/accounts', (req, res) => {
   try {
