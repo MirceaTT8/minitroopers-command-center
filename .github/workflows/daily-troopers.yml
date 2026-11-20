@@ -1,0 +1,64 @@
+name: Daily Mini Troopers Automation
+
+on:
+  schedule:
+    # 1) Daily Battles: 08:00 UTC (10:00 EET / 11:00 EEST)
+    - cron: '0 8 * * *'
+    # 2) Auto-Upgrade (1h30m later): 09:30 UTC (11:30 EET / 12:30 EEST)
+    - cron: '30 9 * * *'
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Which task to run manually?'
+        required: true
+        default: 'battles'
+        type: choice
+        options:
+          - battles
+          - upgrade-dry-run
+          - upgrade-live
+
+jobs:
+  run-automation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Restore secret.cfg from GitHub Secret
+        env:
+          SECRET_CFG: ${{ secrets.SECRET_CFG }}
+        run: |
+          if [ -z "$SECRET_CFG" ]; then
+            echo "ERROR: SECRET_CFG is empty! Add it in Repo Settings -> Secrets -> Actions."
+            exit 1
+          fi
+          printf '%s\n' "$SECRET_CFG" > backend/scripts/secret.cfg
+          sed -i 's/\r$//' backend/scripts/secret.cfg
+          chmod 600 backend/scripts/secret.cfg
+
+      - name: Run Daily Battles, Missions & Raids
+        if: github.event.schedule == '0 8 * * *' || github.event.inputs.task == 'battles'
+        working-directory: ./backend/scripts
+        run: |
+          chmod +x troopers.sh run_accounts.sh
+          ./run_accounts.sh
+
+      - name: Run Auto-Upgrade (Dry Run)
+        if: github.event.inputs.task == 'upgrade-dry-run'
+        working-directory: ./backend
+        run: node scripts/autoUpgrade.js --dry-run
+
+      - name: Run Auto-Upgrade (Live)
+        if: github.event.schedule == '30 9 * * *' || github.event.inputs.task == 'upgrade-live'
+        working-directory: ./backend
+        run: node scripts/autoUpgrade.js
