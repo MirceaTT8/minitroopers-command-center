@@ -1,0 +1,5 @@
+node_modules/
+.env
+*.cookie
+backend/data/raw_html/
+frontend/dist/
