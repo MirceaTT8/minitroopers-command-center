@@ -265,35 +265,6 @@ function fightRandom {
     rm -f "$tmp_hq"
 }
 
-function fightFriend {
-    echo "========================================="
-    echo "Starting Battles phase (Friend: $1)..."
-
-    local tmp_hq="$cookie_file.hq.html"
-
-    for i in {1..6}; do
-        $curl --output "$tmp_hq" "$site/hq"
-        if grep -q "initMissionTimer(1)" "$tmp_hq"; then
-            echo "  Battle $i/6: No battles left today."
-            break
-        fi
-
-        echo -n "  Battle $i/6: Attacking friend ($1)... "
-        $curl --data-urlencode "friend=$1" "$site/b/battle" > /dev/null
-
-        $curl --output "$tmp_hq" "$site/hq"
-        local last_bat=""
-        last_bat=$(grep "bat_tip" "$tmp_hq" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
-        if [[ "$last_bat" == "bwin_bg" ]]; then
-            echo "WON!"
-        else
-            echo "LOST!"
-        fi
-    done
-
-    rm -f "$tmp_hq"
-}
-
 # =========================================================================
 # RAID FUNCTIONS
 # =========================================================================
@@ -312,11 +283,7 @@ function raid {
             $curl --output "$tmp_hq" "$site/hq"
             local last_raid=""
             last_raid=$(grep "raid_tip" "$tmp_hq" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
-            if [[ "$last_raid" == "bwin_bg" ]]; then
-                echo "STAGE CLEARED!"
-            else
-                echo "DEFEATED!"
-            fi
+            echo "STAGE CLEARED!"
         else
             echo "  Raids complete (0 recruits available)."
             break
@@ -382,8 +349,6 @@ function printSummary {
 function locateSecretFile {
     if [[ -f "$prefix/secret.cfg" ]]; then
         echo "$prefix/secret.cfg"
-    elif [[ -f "$prefix/../config/secret.cfg" ]]; then
-        echo "$prefix/../config/secret.cfg"
     else
         echo ""
     fi
@@ -489,8 +454,6 @@ function runSingleAccount {
     else
         if [[ -z "$friend" ]]; then
             fightRandom
-        else
-            fightFriend "$friend"
         fi
         mission
         raid
