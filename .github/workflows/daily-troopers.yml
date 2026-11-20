@@ -3,9 +3,9 @@ name: Daily Mini Troopers Automation
 on:
   schedule:
     # 1) Daily Battles: 08:00 UTC (10:00 EET / 11:00 EEST)
-    - cron: '0 8 * * *'
+    - cron: '30 19 * * *'
     # 2) Auto-Upgrade (1h30m later): 09:30 UTC (11:30 EET / 12:30 EEST)
-    - cron: '30 9 * * *'
+    - cron: '0 20 * * *'
   workflow_dispatch:
     inputs:
       task:
