@@ -131,6 +131,10 @@ function mission {
     local tmp_hq="$cookie_file.hq.html"
 
     for type in exterminate infiltrate epic; do
+        if [[ "$type" == "epic" && "${recruits:-0}" -lt 5 ]]; then
+            echo "  Mission (epic) - skipped (only ${recruits:-0}/5 recruits)."
+            continue
+        fi
         local tip_id=""
         case "$type" in
             exterminate) tip_id="miss_tip" ;;
@@ -299,7 +303,7 @@ function raid {
 
     local tmp_hq="$cookie_file.hq.html"
 
-    for i in {1..9}; do
+    for i in {1..20}; do
         $curl --output "$tmp_hq" "$site/hq"
         if grep -q 'href="/b/raid"' "$tmp_hq"; then
             echo -n "  Raid $i: Recruits available! Executing raid... "
