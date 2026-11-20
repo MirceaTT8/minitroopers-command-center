@@ -88,6 +88,19 @@ function selectSoldierUpgrade {
     saveAccountHtml
 }
 
+function getConfiguredRecruits {
+    local entry acc_name rec_count
+    for entry in "${recruits[@]}"; do
+        acc_name=$(echo "${entry%%:*}" | tr '[:upper:]' '[:lower:]')
+        rec_count="${entry#*:}"
+        if [[ "$acc_name" == "$login_lower" ]]; then
+            echo "$rec_count"
+            return 0
+        fi
+    done
+    return 1
+}
+
 function getMoneyRatio {
     local account_dir="$data_dir/$login_lower"
     local source_file="$account_dir/t0.html"
@@ -128,12 +141,17 @@ function mission {
     echo "========================================="
     echo "Starting Missions phase..."
 
+    local cfg_recruits
+    cfg_recruits="$(getConfiguredRecruits)"
+
     local tmp_hq="$cookie_file.hq.html"
 
     for type in exterminate infiltrate epic; do
-        if [[ "$type" == "epic" && "${recruits:-0}" -lt 5 ]]; then
-            echo "  Mission (epic) - skipped (only ${recruits:-0}/5 recruits)."
-            continue
+         if [[ "$type" == "epic" && -n "$cfg_recruits" ]]; then
+            if [[ "$cfg_recruits" =~ ^[0-9]+$ && "$cfg_recruits" -lt 5 ]]; then
+                echo "  Skipping Mission (epic) - account '$login_original' is in recruits array with $cfg_recruits (< 5)."
+                continue
+            fi
         fi
         local tip_id=""
         case "$type" in
