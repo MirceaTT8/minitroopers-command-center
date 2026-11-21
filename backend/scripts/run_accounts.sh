@@ -59,5 +59,9 @@ for entry in "${accounts[@]}"; do
     pass="${clean_entry#*:}"
 
     "$prefix/troopers.sh" "${mode_flags[@]}" "$user" "$pass"
-    sleep 1.5
+    if [[ " ${mode_flags[*]} " == *" --scrape-only "* ]]; then
+        sleep 0.3
+    else
+        sleep 1.5
+    fi
 done

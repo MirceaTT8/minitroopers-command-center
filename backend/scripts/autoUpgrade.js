@@ -24,7 +24,7 @@ function runBashScript(scriptName, args = []) {
   return execFileSync('bash', [scriptName, ...args], {
     cwd: SCRIPTS_DIR,
     encoding: 'utf8',
-    timeout: 120000,
+    timeout: 1200000,
     maxBuffer: 10 * 1024 * 1024,
   });
 }
