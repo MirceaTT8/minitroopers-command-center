@@ -62,87 +62,86 @@ function main() {
 
   // 3. Process each account
   console.log('[3/3] Checking upgrade eligibility...\n');
-  for (const acc of accounts) {
-    const soldier = acc.firstSoldier;
-    if (!soldier) continue;
+ const MAX_UPGRADES_PER_ACCOUNT = 15; // Safety guard against infinite loops
 
-    const costLabel = `${acc.credits}/${soldier.upgradeCost}`;
+for (let i = 0; i < accounts.length; i++) {
+  let currentAcc = accounts[i];
+  let upgradesDone = 0;
 
-    if (!acc.canUpgrade) {
-      console.log(`[${acc.id}] Lvl ${soldier.level} | ${costLabel} -> Not ready.`);
-      summaryLines.push(`| ${acc.id} | ${soldier.level} | ${costLabel} | Locked | - |`);
-      continue;
+  while (upgradesDone < MAX_UPGRADES_PER_ACCOUNT) {
+    const soldier = currentAcc.firstSoldier;
+    const hasPendingChoices =
+      Array.isArray(soldier?.availableUpgrades) && soldier.availableUpgrades.length > 0;
+    const canAfford =
+      soldier && soldier.upgradeCost > 0 && currentAcc.credits >= soldier.upgradeCost;
+
+    if (!canAfford && !hasPendingChoices) {
+      if (upgradesDone === 0) {
+        console.log(
+          `[${currentAcc.id}] Lvl ${soldier?.level ?? 'null'} | ${currentAcc.credits}/${soldier?.upgradeCost ?? 0} -> Not ready.`
+        );
+      } else {
+        console.log(
+          `[${currentAcc.id}] Finished continuous upgrades (${upgradesDone} level(s) gained). Now Lvl ${soldier?.level} | ${currentAcc.credits}/${soldier?.upgradeCost}.\n`
+        );
+      }
+      break;
     }
 
-    console.log(`[${acc.id}] Lvl ${soldier.level} | ${costLabel} -> READY TO UPGRADE!`);
+    console.log(
+      `[${currentAcc.id}] Lvl ${soldier.level} | ${currentAcc.credits}/${soldier.upgradeCost} -> READY TO UPGRADE! (Pass #${upgradesDone + 1})`
+    );
 
-    let currentAcc = acc;
-    let currentSoldier = soldier;
-
-    // Step 3a: Unlock / roll upgrade choices if not already requested
-    if (!currentSoldier.availableUpgrades || currentSoldier.availableUpgrades.length === 0) {
-      if (IS_DRY_RUN) {
-        console.log('  -> [DRY RUN] Would run --request-upgrade to roll choices (0 credits spent).\n');
-        summaryLines.push(`| ${acc.id} | ${soldier.level} | ${costLabel} | Dry Run (Ready to Roll) | *Pending roll* |`);
-        continue;
-      }
-
-      console.log(`  -> Requesting upgrade choices via ./troopers.sh --request-upgrade ${acc.id} ...`);
-      try {
-        runBashScript('./troopers.sh', ['--request-upgrade', acc.id]);
-        currentAcc = parseAccountFolder(acc.id);
-        currentSoldier = currentAcc?.firstSoldier;
-      } catch (err) {
-        console.error(`  -> [ERROR] --request-upgrade failed: ${err.stderr || err.message}\n`);
-        summaryLines.push(`| ${acc.id} | ${soldier.level} | ${costLabel} | Error (Roll) | ${err.message} |`);
-        continue;
-      }
+    // 1. Request upgrade choices if not already on the level-up screen
+    if (!hasPendingChoices) {
+      console.log(`  -> Requesting upgrade choices via ./troopers.sh --request-upgrade ${currentAcc.id} ...`);
+      runBashScript('./troopers.sh', ['--request-upgrade', currentAcc.id]);
+      currentAcc = parseAccountFolder(currentAcc.id);
     }
 
-    const choices = currentSoldier?.availableUpgrades || [];
+    const updatedSoldier = currentAcc?.firstSoldier;
+    const choices = updatedSoldier?.availableUpgrades || [];
+
     if (choices.length === 0) {
-      console.log('  -> [WARN] No upgrade choices found after parsing.\n');
-      summaryLines.push(`| ${acc.id} | ${soldier.level} | ${costLabel} | No Choices | - |`);
-      continue;
+      console.log(`  -> [WARN] No upgrade choices found for ${currentAcc.id}. Stopping loop.\n`);
+      break;
     }
-
-    // Step 3b: Ask strategyEngine.js for the best skill
-    const recommendation = recommendBestUpgrade(currentSoldier, collectiveMetrics);
-    const chosenOption =
-      choices.find((c) => c.id === recommendation.recommendedOptionId) || choices[0];
 
     console.log(`  -> Rolled: ${choices.map((c) => c.name).join(', ')}`);
-    console.log(`  -> Strategy Engine Pick: ${chosenOption.name}`);
-    for (const reason of recommendation.reasons || []) {
+
+    // 2. Pick best skill using Strategy Engine
+    const rec = recommendBestUpgrade(updatedSoldier, collectiveMetrics);
+    const chosen = choices.find((c) => c.id === rec.recommendedOptionId) || choices[0];
+
+    console.log(`  -> Strategy Engine Pick: ${chosen.name}`);
+    for (const reason of rec.reasons || []) {
       console.log(`     • ${reason}`);
     }
 
-    if (!chosenOption.selectUrl) {
-      console.log('  -> [WARN] Chosen option has no selectUrl. Skipping.\n');
-      summaryLines.push(`| ${acc.id} | ${soldier.level} | ${costLabel} | Missing URL | ${chosenOption.name} |`);
-      continue;
-    }
-
-    // Step 3c: Select the upgrade (or simulate in dry-run)
     if (IS_DRY_RUN) {
-      console.log(`  -> [DRY RUN] Would select "${chosenOption.name}" (${chosenOption.selectUrl})\n`);
-      summaryLines.push(`| ${acc.id} | ${soldier.level} | ${costLabel} | Dry Run | **${chosenOption.name}** |`);
-    } else {
-      try {
-        runBashScript('./troopers.sh', ['--select-upgrade', chosenOption.selectUrl, acc.id]);
-        console.log(`  -> [UPGRADED] Selected "${chosenOption.name}"!\n`);
-        summaryLines.push(`| ${acc.id} | ${soldier.level} | ${costLabel} | Upgraded | **${chosenOption.name}** |`);
-
-        // Refresh collective metrics so subsequent accounts see updated Scout/Doctor/Saboteur counts
-        accounts = parseAllAccounts();
-        collectiveMetrics = evaluateCollectiveRaidPool(accounts);
-      } catch (err) {
-        console.error(`  -> [ERROR] --select-upgrade failed: ${err.stderr || err.message}\n`);
-        summaryLines.push(`| ${acc.id} | ${soldier.level} | ${costLabel} | Error (Select) | ${err.message} |`);
-      }
+      console.log(`  -> [DRY RUN] Would select "${chosen.name}" (${chosen.selectUrl}). Stopping loop for dry-run.\n`);
+      break;
     }
-  }
 
+    if (!chosen.selectUrl) {
+      console.log(`  -> [WARN] Missing selectUrl for "${chosen.name}". Stopping loop.\n`);
+      break;
+    }
+
+    // 3. Select the chosen skill (troopers.sh automatically re-saves hq.html & t0.html)
+    runBashScript('./troopers.sh', ['--select-upgrade', chosen.selectUrl, currentAcc.id]);
+    console.log(`  -> [UPGRADED] Selected "${chosen.name}"!`);
+
+    upgradesDone++;
+
+    // 4. Re-parse the updated account HTML so the next iteration sees the new level, credits & cost
+    currentAcc = parseAccountFolder(currentAcc.id);
+    accounts[i] = currentAcc;
+
+    // 5. Refresh collective Raid pool metrics so class deficits stay accurate
+    collectiveMetrics = evaluateCollectiveRaidPool(accounts);
+  }
+}
   if (process.env.GITHUB_STEP_SUMMARY) {
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summaryLines.join('\n') + '\n');
   }
