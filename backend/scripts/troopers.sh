@@ -141,18 +141,32 @@ function mission {
     echo "========================================="
     echo "Starting Missions phase..."
 
-    local cfg_recruits
-    cfg_recruits="$(getConfiguredRecruits)"
-
     local tmp_hq="$cookie_file.hq.html"
 
-    for type in exterminate infiltrate epic; do
-         if [[ "$type" == "epic" && -n "$cfg_recruits" ]]; then
-            if [[ "$cfg_recruits" =~ ^[0-9]+$ && "$cfg_recruits" -lt 5 ]]; then
-                echo "  Skipping Mission (epic) - account '$login_original' is in recruits array with $cfg_recruits (< 5)."
-                continue
+    # Check if missions are locked (href="/unlock?mode=miss")
+    $curl --output "$tmp_hq" "$site/hq"
+    if grep -q '/unlock?mode=miss' "$tmp_hq"; then
+        if [[ "$auto_buy_missions" == "true" ]]; then
+            echo "  [Auto-Buy] Missions locked! Sending unlock request to $site/unlock?mode=miss..."
+            $curl -e "$site/hq" "$site/unlock?mode=miss" > /dev/null
+
+            # Re-fetch /hq to confirm whether the server unlocked them
+            $curl --output "$tmp_hq" "$site/hq"
+            if grep -q '/unlock?mode=miss' "$tmp_hq"; then
+                echo "  [Auto-Buy] Unlock request sent, but missions remain locked (server rejected / insufficient tokens)."
+                rm -f "$tmp_hq"
+                return 0
+            else
+                echo "  [Auto-Buy] Missions unlocked successfully!"
             fi
+        else
+            echo "  Missions are locked (auto_buy_missions is disabled). Skipping missions."
+            rm -f "$tmp_hq"
+            return 0
         fi
+    fi
+
+    for type in exterminate infiltrate epic; do
         local tip_id=""
         case "$type" in
             exterminate) tip_id="miss_tip" ;;
@@ -497,6 +511,7 @@ scrape_only="false"
 request_upgrade="false"
 select_upgrade_url=""
 recruiter_name=""
+auto_buy_missions="false"
 
 for command in 'grep' 'curl' 'awk' 'tr'; do
     if ! command -v "$command" > /dev/null; then
@@ -511,6 +526,7 @@ done
 loadSecretArrays
 
 args=()
+args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --scrape-only|-s|--sync)
@@ -524,6 +540,14 @@ while [[ $# -gt 0 ]]; do
         --select-upgrade)
             select_upgrade_url="$2"
             shift 2
+            ;;
+        --auto-buy-missions)
+            auto_buy_missions="true"
+            shift
+            ;;
+        --no-auto-buy-missions)
+            auto_buy_missions="false"
+            shift
             ;;
         *)
             args+=("$1")

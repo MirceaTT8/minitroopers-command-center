@@ -1,16 +1,22 @@
 #!/bin/bash
 
 prefix="$(cd "$(dirname "$0")" && pwd)"
-mode_flag=""
+mode_flags=()
 
 # 1. Parse CLI flags
 for arg in "$@"; do
     case "$arg" in
         --scrape-only|-s|--sync)
-            mode_flag="--scrape-only"
+            mode_flags+=("--scrape-only")
             ;;
         --request-upgrade|-u)
-            mode_flag="--request-upgrade"
+            mode_flags+=("--request-upgrade")
+            ;;
+        --auto-buy-missions)
+            mode_flags+=("--auto-buy-missions")
+            ;;
+        --no-auto-buy-missions)
+            mode_flags+=("--no-auto-buy-missions")
             ;;
     esac
 done
@@ -47,14 +53,11 @@ if [[ ${#accounts[@]} -eq 0 ]]; then
 fi
 
 # 4. Execute troopers.sh for each account
+# 4. Execute troopers.sh for each account
 for entry in "${accounts[@]}"; do
     clean_entry="${entry//\"/}"
     user="${clean_entry%%:*}"
     pass="${clean_entry#*:}"
 
-    if [[ -n "$mode_flag" ]]; then
-        "$prefix/troopers.sh" "$mode_flag" "$user" "$pass"
-    else
-        "$prefix/troopers.sh" "$user" "$pass"
-    fi
+    "$prefix/troopers.sh" "${mode_flags[@]}" "$user" "$pass"
 done
