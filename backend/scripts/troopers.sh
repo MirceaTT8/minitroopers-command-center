@@ -30,6 +30,12 @@ function safeCurl {
 
         last_http_code="${http_code:-000}"
 
+        # Do not retry DNS resolution failures (exit=6 = invalid/misspelled subdomain)
+        if [[ $curl_exit -eq 6 ]]; then
+            echo "  [Error] $url failed (DNS resolution error, exit=6). Skipping retries." >&2
+            return 1
+        fi
+
         # Retry on network error or rate-limit / server error status codes
         if [[ $curl_exit -ne 0 || "$last_http_code" == "000" || "$last_http_code" == "429" || "$last_http_code" =~ ^50[0234]$ ]]; then
             if [[ $attempt -lt $max_retries ]]; then

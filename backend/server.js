@@ -112,7 +112,7 @@ app.post('/api/accounts/sync', (req, res) => {
   execFile(
     'bash',
     [scriptToRun, '--scrape-only'],
-    { cwd: scriptsDir, timeout: 120000 },
+    { cwd: scriptsDir, timeout: 1200000 },
     (error, stdout, stderr) => {
       if (error) {
         console.error('Sync script error:', stderr || error.message);
