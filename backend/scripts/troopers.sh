@@ -166,12 +166,11 @@ function mission {
         fi
     fi
 
-    for type in exterminate infiltrate epic; do
+    for type in exterminate infiltrate; do
         local tip_id=""
         case "$type" in
             exterminate) tip_id="miss_tip" ;;
             infiltrate)  tip_id="infil_tip" ;;
-            epic)        tip_id="epic_tip" ;;
         esac
 
         for i in {1..3}; do
@@ -353,11 +352,7 @@ function printSummary {
     local inf_loss=$(grep "infil_tip" "$hq_file" | grep -c "bdefeat_bg")
     local inf_tot=$((inf_wins + inf_loss))
 
-    local epic_wins=$(grep "epic_tip" "$hq_file" | grep -c "bwin_bg")
-    local epic_loss=$(grep "epic_tip" "$hq_file" | grep -c "bdefeat_bg")
-    local epic_tot=$((epic_wins + epic_loss))
-
-    local total_m_wins=$((ext_wins + inf_wins + epic_wins))
+    local total_m_wins=$((ext_wins + inf_wins ))
 
     local raid_phase=$(grep -Eo '<h1 class="hbox">Raid Phase [0-9]+</h1>' "$hq_file" | grep -Eo '[0-9]+')
     [[ -z "$raid_phase" ]] && raid_phase="Unknown"
@@ -367,10 +362,9 @@ function printSummary {
     [[ -n "$recruiter_name" ]] && echo "       RECRUITER  : $recruiter_name"
     echo "========================================="
     echo "Battles Won     : $bat_wins/$bat_total ($bat_pct%)"
-    echo "Missions Won    : $total_m_wins/3 missions completed"
+    echo "Missions Won    : $total_m_wins/2 missions completed"
     echo "  - Exterminate : $ext_wins won ($ext_loss failed,$ext_tot attempts)"
     echo "  - Infiltrate  : $inf_wins won ($inf_loss failed,$inf_tot attempts)"
-    echo "  - Epic        : $epic_wins won ($epic_loss failed,$epic_tot attempts)"
     echo "Last Raid Level : Raid Phase $raid_phase"
     echo "========================================="
 }
