@@ -1,6 +1,54 @@
 #!/bin/bash
 
 # =========================================================================
+# SAFE CURL WRAPPER (TIMEOUTS, HTTP STATUS, EXPONENTIAL BACKOFF RETRIES)
+# =========================================================================
+last_http_code="000"
+
+function safeCurl {
+    local out_file="$1"
+    local url="$2"
+    shift 2
+
+    local max_retries=3
+    local backoff=5
+    local attempt=0
+    local http_code="000"
+    local curl_exit=0
+
+    while true; do
+        http_code=$(curl -L --silent --show-error \
+            --connect-timeout 10 \
+            --max-time 25 \
+            --cookie "$cookie_file" \
+            --cookie-jar "$cookie_file" \
+            --output "$out_file" \
+            -w "%{http_code}" \
+            "$@" \
+            "$url" 2>/dev/null)
+        curl_exit=$?
+
+        last_http_code="${http_code:-000}"
+
+        # Retry on network error or rate-limit / server error status codes
+        if [[ $curl_exit -ne 0 || "$last_http_code" == "000" || "$last_http_code" == "429" || "$last_http_code" =~ ^50[0234]$ ]]; then
+            if [[ $attempt -lt $max_retries ]]; then
+                attempt=$((attempt + 1))
+                echo "  [Retry $attempt/$max_retries] $url failed (exit=$curl_exit, HTTP=$last_http_code). Backing off ${backoff}s..." >&2
+                sleep "$backoff"
+                backoff=$((backoff * 2))
+                continue
+            else
+                echo "  [Error] $url failed after $max_retries retries (exit=$curl_exit, HTTP=$last_http_code)." >&2
+                return 1
+            fi
+        fi
+
+        return 0
+    done
+}
+
+# =========================================================================
 # SCRAPE, UPGRADE REQUEST & SAVE RAW HTML FUNCTIONS
 # =========================================================================
 function saveAccountHtml {
@@ -8,11 +56,16 @@ function saveAccountHtml {
     mkdir -p "$account_dir"
 
     echo "  [Sync] Saving /hq and /t/0 HTML to $account_dir..."
-    $curl --output "$account_dir/hq.html" "$site/hq"
-    $curl --output "$account_dir/t0.html" "$site/t/0"
+    safeCurl "$account_dir/hq.html" "$site/hq"
+    safeCurl "$account_dir/t0.html" "$site/t/0"
 
     if [[ -n "$recruiter_name" ]]; then
         echo "$recruiter_name" > "$account_dir/recruiter.txt"
+    fi
+
+    if [[ ! -s "$account_dir/t0.html" ]]; then
+        echo "  [Sync] Warning: $account_dir/t0.html is missing or empty (HTTP=$last_http_code)."
+        return 1
     fi
 
     if grep -q 'class="levelup"' "$account_dir/t0.html"; then
@@ -33,13 +86,18 @@ function requestSoldierUpgrade {
     fi
 
     echo "  [Upgrade] Fetching /t/0 for $login_original..."
-    $curl --output "$account_dir/t0.html" "$site/t/0"
+    safeCurl "$account_dir/t0.html" "$site/t/0"
+
+    if [[ ! -s "$account_dir/t0.html" ]]; then
+        echo "  [Upgrade] Error: Failed to fetch /t/0 (HTTP=$last_http_code)."
+        return 1
+    fi
 
     # Case 1: /t/0 is ALREADY on the <table class="levelup"> screen
     if grep -q 'class="levelup"' "$account_dir/t0.html"; then
         echo "  [Upgrade] $login_original is already on the level-up selection screen. Saving options..."
         cp "$account_dir/t0.html" "$account_dir/levelup0.html"
-        $curl --output "$account_dir/hq.html" "$site/hq"
+        safeCurl "$account_dir/hq.html" "$site/hq"
         return 0
     fi
 
@@ -53,17 +111,17 @@ function requestSoldierUpgrade {
 
     if [[ -n "$levelup_href" ]]; then
         echo "  [Upgrade] Sending upgrade request to $site$levelup_href..."
-        $curl -e "$site/t/0" --output "$account_dir/levelup0.html" "$site$levelup_href"
+        safeCurl "$account_dir/levelup0.html" "$site$levelup_href" -e "$site/t/0"
 
-        if grep -q 'class="levelup"' "$account_dir/levelup0.html"; then
+        if [[ -s "$account_dir/levelup0.html" ]] && grep -q 'class="levelup"' "$account_dir/levelup0.html"; then
             cp "$account_dir/levelup0.html" "$account_dir/t0.html"
         fi
     else
         echo "  [Upgrade] No ?levelup= link found on /t/0. Checking /levelup/0..."
-        $curl -e "$site/t/0" --output "$account_dir/levelup0.html" "$site/levelup/0"
+        safeCurl "$account_dir/levelup0.html" "$site/levelup/0" -e "$site/t/0"
     fi
 
-    $curl --output "$account_dir/hq.html" "$site/hq"
+    safeCurl "$account_dir/hq.html" "$site/hq"
     echo "  [Upgrade] Upgrade options saved to $account_dir/levelup0.html."
 }
 
@@ -82,23 +140,10 @@ function selectSoldierUpgrade {
     fi
 
     echo "  [Upgrade] Selecting skill via $site$target_href..."
-    $curl -e "$site/t/0" --output "$account_dir/t0.html" "$site$target_href"
+    safeCurl "$account_dir/t0.html" "$site$target_href" -e "$site/t/0"
 
     rm -f "$account_dir/levelup0.html"
     saveAccountHtml
-}
-
-function getConfiguredRecruits {
-    local entry acc_name rec_count
-    for entry in "${recruits[@]}"; do
-        acc_name=$(echo "${entry%%:*}" | tr '[:upper:]' '[:lower:]')
-        rec_count="${entry#*:}"
-        if [[ "$acc_name" == "$login_lower" ]]; then
-            echo "$rec_count"
-            return 0
-        fi
-    done
-    return 1
 }
 
 function getMoneyRatio {
@@ -109,8 +154,14 @@ function getMoneyRatio {
         source_file="$account_dir/t0_stats.html"
     fi
 
-    if [[ ! -f "$source_file" ]]; then
-        $curl --output "$source_file" "$site/t/0"
+    if [[ ! -s "$source_file" ]]; then
+        mkdir -p "$account_dir"
+        safeCurl "$source_file" "$site/t/0"
+    fi
+
+    if [[ ! -s "$source_file" ]]; then
+        echo "$login_original's money for next upgrade : 0/0 (unavailable)"
+        return 1
     fi
 
     local money=""
@@ -144,15 +195,21 @@ function mission {
     local tmp_hq="$cookie_file.hq.html"
 
     # Check if missions are locked (href="/unlock?mode=miss")
-    $curl --output "$tmp_hq" "$site/hq"
+    safeCurl "$tmp_hq" "$site/hq"
+    if [[ ! -s "$tmp_hq" ]]; then
+        echo "  [Error] Could not load /hq for missions (HTTP=$last_http_code). Skipping."
+        rm -f "$tmp_hq"
+        return 1
+    fi
+
     if grep -q '/unlock?mode=miss' "$tmp_hq"; then
         if [[ "$auto_buy_missions" == "true" ]]; then
             echo "  [Auto-Buy] Missions locked! Sending unlock request to $site/unlock?mode=miss..."
-            $curl -e "$site/hq" "$site/unlock?mode=miss" > /dev/null
+            safeCurl "/dev/null" "$site/unlock?mode=miss" -e "$site/hq"
 
             # Re-fetch /hq to confirm whether the server unlocked them
-            $curl --output "$tmp_hq" "$site/hq"
-            if grep -q '/unlock?mode=miss' "$tmp_hq"; then
+            safeCurl "$tmp_hq" "$site/hq"
+            if [[ -s "$tmp_hq" ]] && grep -q '/unlock?mode=miss' "$tmp_hq"; then
                 echo "  [Auto-Buy] Unlock request sent, but missions remain locked (server rejected / insufficient tokens)."
                 rm -f "$tmp_hq"
                 return 0
@@ -174,25 +231,29 @@ function mission {
         esac
 
         for i in {1..3}; do
-            $curl --output "$tmp_hq" "$site/hq"
+            safeCurl "$tmp_hq" "$site/hq"
 
-            if ! grep -q "mission?t=$type" "$tmp_hq"; then
+            if [[ ! -s "$tmp_hq" ]] || ! grep -q "mission?t=$type" "$tmp_hq"; then
                 echo "  Mission ($type) - no more attempts available today."
                 break
             fi
 
-            echo -n "  Running mission ($type) - attempt$i/3... "
-            $curl "$site/b/mission?t=$type" > /dev/null
+            echo -n "  Running mission ($type) - attempt $i/3... "
+            safeCurl "/dev/null" "$site/b/mission?t=$type"
 
-            $curl --output "$tmp_hq" "$site/hq"
+            safeCurl "$tmp_hq" "$site/hq"
             local last_badge=""
-            last_badge=$(grep "$tip_id" "$tmp_hq" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
+            if [[ -s "$tmp_hq" ]]; then
+                last_badge=$(grep "$tip_id" "$tmp_hq" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
+            fi
 
             if [[ "$last_badge" == "bwin_bg" ]]; then
                 echo "WON!"
             else
                 echo "LOST!"
             fi
+
+            sleep "$delay_between_battles"
         done
     done
 
@@ -204,7 +265,13 @@ function mission {
 # =========================================================================
 function getFightKey {
     local tmp_opp="$cookie_file.opp.html"
-    $curl --output "$tmp_opp" "$site/b/opp"
+    safeCurl "$tmp_opp" "$site/b/opp"
+
+    if [[ ! -s "$tmp_opp" ]]; then
+        echo "  [Diag] /b/opp returned empty body (HTTP=$last_http_code)." >&2
+        rm -f "$tmp_opp"
+        return 1
+    fi
 
     local best_opp=""
     best_opp=$(awk '
@@ -260,10 +327,30 @@ function getFightKey {
     if [[ -n "$best_opp" ]]; then
         rm -f "$tmp_opp"
         echo "$best_opp"
-    else
-        grep -Eo 'opp=[0-9]+' "$tmp_opp" | head -n 1
-        rm -f "$tmp_opp"
+        return 0
     fi
+
+    local fallback_opp=""
+    fallback_opp=$(grep -Eo 'opp=[0-9]+' "$tmp_opp" | head -n 1)
+    if [[ -n "$fallback_opp" ]]; then
+        rm -f "$tmp_opp"
+        echo "$fallback_opp"
+        return 0
+    fi
+
+    # Diagnostic output when no opp= is found
+    if [[ "$last_http_code" != "200" ]]; then
+        local first_line=""
+        first_line=$(awk 'NF {print; exit}' "$tmp_opp" | cut -c1-120)
+        echo "  [Diag] /b/opp had no opponents (HTTP=$last_http_code | Body: $first_line)" >&2
+    elif grep -qi 'name="login"' "$tmp_opp"; then
+        echo "  [Diag] /b/opp redirected to login page (HTTP=$last_http_code, session invalid)." >&2
+    else
+        echo "  [Diag] /b/opp returned HTTP=$last_http_code with 0 opponents (daily limit reached)." >&2
+    fi
+
+    rm -f "$tmp_opp"
+    return 1
 }
 
 function fightRandom {
@@ -277,16 +364,20 @@ function fightRandom {
         key="$(getFightKey)"
         if [[ -n "$key" ]]; then
             echo -n "  Battle $i/6: Attacking opponent ($key)... "
-            $curl "$site/b/battle?$key" > /dev/null
+            safeCurl "/dev/null" "$site/b/battle?$key"
 
-            $curl --output "$tmp_hq" "$site/hq"
+            safeCurl "$tmp_hq" "$site/hq"
             local last_bat=""
-            last_bat=$(grep "bat_tip" "$tmp_hq" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
+            if [[ -s "$tmp_hq" ]]; then
+                last_bat=$(grep "bat_tip" "$tmp_hq" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
+            fi
             if [[ "$last_bat" == "bwin_bg" ]]; then
                 echo "WON!"
             else
                 echo "LOST!"
             fi
+
+            sleep "$delay_between_battles"
         else
             echo "  Battle $i/6: No opponent found on /b/opp (0 battles left or page error)."
             break
@@ -306,15 +397,23 @@ function raid {
     local tmp_hq="$cookie_file.hq.html"
 
     for i in {1..20}; do
-        $curl --output "$tmp_hq" "$site/hq"
-        if grep -q 'href="/b/raid"' "$tmp_hq"; then
+        safeCurl "$tmp_hq" "$site/hq"
+        if [[ -s "$tmp_hq" ]] && grep -q 'href="/b/raid"' "$tmp_hq"; then
             echo -n "  Raid $i: Recruits available! Executing raid... "
-            $curl "$site/b/raid" > /dev/null
+            safeCurl "/dev/null" "$site/b/raid"
 
-            $curl --output "$tmp_hq" "$site/hq"
+            safeCurl "$tmp_hq" "$site/hq"
             local last_raid=""
-            last_raid=$(grep "raid_tip" "$tmp_hq" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
-            echo "STAGE CLEARED!"
+            if [[ -s "$tmp_hq" ]]; then
+                last_raid=$(grep "raid_tip" "$tmp_hq" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
+            fi
+            if [[ "$last_raid" == "bwin_bg" ]]; then
+                echo "STAGE CLEARED!"
+            else
+                echo "DEFEATED!"
+            fi
+
+            sleep "$delay_between_battles"
         else
             echo "  Raids complete (0 recruits available)."
             break
@@ -331,9 +430,16 @@ function printSummary {
     local account_dir="$data_dir/$login_lower"
     local hq_file="$account_dir/hq.html"
 
-    if [[ ! -f "$hq_file" ]]; then
+    if [[ ! -s "$hq_file" ]]; then
         mkdir -p "$account_dir"
-        $curl --output "$hq_file" "$site/hq"
+        safeCurl "$hq_file" "$site/hq"
+    fi
+
+    if [[ ! -s "$hq_file" ]]; then
+        echo "========================================="
+        echo "       SUMMARY FOR: $login_original (FAILED TO LOAD /hq)"
+        echo "========================================="
+        return 1
     fi
 
     local bat_wins=$(grep "bat_tip" "$hq_file" | grep -c "bwin_bg")
@@ -352,7 +458,7 @@ function printSummary {
     local inf_loss=$(grep "infil_tip" "$hq_file" | grep -c "bdefeat_bg")
     local inf_tot=$((inf_wins + inf_loss))
 
-    local total_m_wins=$((ext_wins + inf_wins ))
+    local total_m_wins=$((ext_wins + inf_wins))
 
     local raid_phase=$(grep -Eo '<h1 class="hbox">Raid Phase [0-9]+</h1>' "$hq_file" | grep -Eo '[0-9]+')
     [[ -z "$raid_phase" ]] && raid_phase="Unknown"
@@ -433,14 +539,12 @@ function authenticate {
     fi
 
     if [[ -n "$password" ]]; then
-        curl -L --silent --cookie-jar "$cookie_file" \
+        safeCurl "/dev/null" "$site/login" \
             --data-urlencode "login=$login_lower" \
-            --data-urlencode "pass=$password" \
-            "$site/login" > /dev/null
+            --data-urlencode "pass=$password"
     else
-        curl -L --silent --cookie-jar "$cookie_file" \
-            --data-urlencode "login=$login_lower" \
-            "$site/login" > /dev/null
+        safeCurl "/dev/null" "$site/login" \
+            --data-urlencode "login=$login_lower"
     fi
 }
 
@@ -458,7 +562,6 @@ function runSingleAccount {
 
     site="https://$login_lower.trooperstest.gued.es"
     cookie_file="$(mktemp -t "$login_lower.XXXXXX" --suffix='.cookie')"
-    curl="curl -L --silent --cookie $cookie_file --cookie-jar "$cookie_file""
 
     if [[ -n "$recruiter_name" ]]; then
         echo ">>> Processing account: $login_original (Recruiter:$recruiter_name)"
@@ -506,10 +609,12 @@ request_upgrade="false"
 select_upgrade_url=""
 recruiter_name=""
 auto_buy_missions="false"
+delay_between_battles="0.5"
+delay_between_accounts="1.5"
 
 for command in 'grep' 'curl' 'awk' 'tr'; do
     if ! command -v "$command" > /dev/null; then
-        echo "error: $0 needs$command to execute"
+        echo "error: $0 needs $command to execute"
         exit 2
     fi
 done
@@ -519,7 +624,6 @@ done
 
 loadSecretArrays
 
-args=()
 args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -573,6 +677,7 @@ for raw_item in "${accounts[@]}"; do
     acc_user="${entry%%:*}"
     acc_pass="${entry#*:}"
     runSingleAccount "$acc_user" "$acc_pass"
+    sleep "$delay_between_accounts"
 done
 
 echo "Finished processing all ${#accounts[@]} accounts!"

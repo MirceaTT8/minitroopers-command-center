@@ -53,11 +53,11 @@ if [[ ${#accounts[@]} -eq 0 ]]; then
 fi
 
 # 4. Execute troopers.sh for each account
-# 4. Execute troopers.sh for each account
 for entry in "${accounts[@]}"; do
     clean_entry="${entry//\"/}"
     user="${clean_entry%%:*}"
     pass="${clean_entry#*:}"
 
     "$prefix/troopers.sh" "${mode_flags[@]}" "$user" "$pass"
+    sleep 1.5
 done
