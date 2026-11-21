@@ -2,9 +2,9 @@ name: Daily Mini Troopers Automation
 
 on:
   schedule:
-    # 1) Daily Battles: 08:00 UTC (10:00 EET / 11:00 EEST)
+    # 1) Daily Battles: 19:30 UTC (21:30 EET / 22:30 EEST)
     - cron: '30 19 * * *'
-    # 2) Auto-Upgrade (1h30m later): 09:30 UTC (11:30 EET / 12:30 EEST)
+    # 2) Auto-Upgrade (30m later): 20:00 UTC (22:00 EET / 23:00 EEST)
     - cron: '0 20 * * *'
   workflow_dispatch:
     inputs:
@@ -34,20 +34,20 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
-      - name: Restore secret.cfg from GitHub Secret
+      - name: Restore secret.cfg from GitHub Secret (Base64)
         env:
-          SECRET_CFG: ${{ secrets.SECRET_CFG }}
+          SECRET_CFG_B64: ${{ secrets.SECRET_CFG_B64 }}
         run: |
-          if [ -z "$SECRET_CFG" ]; then
-            echo "ERROR: SECRET_CFG is empty! Add it in Repo Settings -> Secrets -> Actions."
+          if [ -z "$SECRET_CFG_B64" ]; then
+            echo "ERROR: SECRET_CFG_B64 is empty! Add it in Repo Settings -> Secrets -> Actions."
             exit 1
           fi
-          printf '%s\n' "$SECRET_CFG" > backend/scripts/secret.cfg
+          printf '%s' "$SECRET_CFG_B64" | base64 -d > backend/scripts/secret.cfg
           sed -i 's/\r$//' backend/scripts/secret.cfg
           chmod 600 backend/scripts/secret.cfg
 
       - name: Run Daily Battles, Missions & Raids
-        if: github.event.schedule == '0 8 * * *' || github.event.inputs.task == 'battles'
+        if: github.event.schedule == '30 19 * * *' || github.event.inputs.task == 'battles'
         working-directory: ./backend/scripts
         run: |
           chmod +x troopers.sh run_accounts.sh
@@ -59,6 +59,6 @@ jobs:
         run: node scripts/autoUpgrade.js --dry-run
 
       - name: Run Auto-Upgrade (Live)
-        if: github.event.schedule == '30 9 * * *' || github.event.inputs.task == 'upgrade-live'
+        if: github.event.schedule == '0 20 * * *' || github.event.inputs.task == 'upgrade-live'
         working-directory: ./backend
         run: node scripts/autoUpgrade.js
