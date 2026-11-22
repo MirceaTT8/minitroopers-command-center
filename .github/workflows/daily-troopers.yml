@@ -17,6 +17,7 @@ on:
           - battles
           - upgrade-dry-run
           - upgrade-live
+          - auto-config
 
 jobs:
   run-automation:
@@ -64,9 +65,9 @@ jobs:
         run: node scripts/autoUpgrade.js
 
       - name: Run Auto-Configure Soldier AI
-      if: github.event.inputs.task == 'auto-config'
-      working-directory: ./backend
-      run: |
-        chmod +x scripts/troopers.sh scripts/run_accounts.sh
-        (cd scripts && ./troopers.sh --scrape-only)
-        node scripts/autoConfigCli.js
+        if: github.event.inputs.task == 'auto-config'
+        working-directory: ./backend
+        run: |
+          chmod +x scripts/troopers.sh scripts/run_accounts.sh
+          (cd scripts && ./troopers.sh --scrape-only)
+          node scripts/autoConfigCli.js
