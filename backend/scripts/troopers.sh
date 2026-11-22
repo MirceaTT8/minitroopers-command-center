@@ -152,6 +152,38 @@ function selectSoldierUpgrade {
     saveAccountHtml
 }
 
+function updateSoldierConfig {
+    local action_url="$1"
+    local weapon="$2"
+    local loc="$3"
+    local target="$4"
+    local move="$5"
+    local ttype="$6"
+
+    if [[ -z "$action_url" ]]; then
+        echo "error: Missing config action URL"
+        exit 1
+    fi
+
+    if [[ "$action_url" != /* ]]; then
+        action_url="/$action_url"
+    fi
+
+    echo "  [Config] Updating AI config via POST $site$action_url (weapon=$weapon loc=$loc target=$target move=$move ttype=$ttype)..."
+    if ! safeCurl "/dev/null" "$site$action_url" \
+        -e "$site/t/0" \
+        --data-urlencode "weapon=$weapon" \
+        --data-urlencode "loc=$loc" \
+        --data-urlencode "target=$target" \
+        --data-urlencode "move=$move" \
+        --data-urlencode "ttype=$ttype"; then
+        echo "  [Config] Error: Failed to update AI config (HTTP=$last_http_code)." >&2
+        return 1
+    fi
+
+    saveAccountHtml
+}
+
 function getMoneyRatio {
     local account_dir="$data_dir/$login_lower"
     local source_file="$account_dir/t0.html"
@@ -581,6 +613,8 @@ function runSingleAccount {
         requestSoldierUpgrade
     elif [[ -n "$select_upgrade_url" ]]; then
         selectSoldierUpgrade "$select_upgrade_url"
+    elif [[ -n "$update_config_url" ]]; then
+        updateSoldierConfig "$update_config_url" "$cfg_weapon" "$cfg_loc" "$cfg_target" "$cfg_move" "$cfg_ttype"
     elif [[ "$scrape_only" == "true" ]]; then
         saveAccountHtml
         if [[ "$report" != "never" ]]; then
@@ -613,6 +647,12 @@ report="upgradable"
 scrape_only="false"
 request_upgrade="false"
 select_upgrade_url=""
+update_config_url=""
+cfg_weapon=""
+cfg_loc=""
+cfg_target=""
+cfg_move=""
+cfg_ttype=""
 recruiter_name=""
 auto_buy_missions="false"
 delay_between_battles="0.5"
@@ -645,6 +685,15 @@ while [[ $# -gt 0 ]]; do
             select_upgrade_url="$2"
             shift 2
             ;;
+        --update-config)
+            update_config_url="$2"
+            cfg_weapon="$3"
+            cfg_loc="$4"
+            cfg_target="$5"
+            cfg_move="$6"
+            cfg_ttype="$7"
+            shift 7
+            ;;
         --auto-buy-missions)
             auto_buy_missions="true"
             shift
@@ -673,7 +722,7 @@ if [[ ${#args[@]} -gt 0 ]]; then
 fi
 
 if [[ ${#accounts[@]} -eq 0 ]]; then
-    echo "Usage: $0 [--scrape-only] [--request-upgrade] [<login> [password] [friend]]"
+    echo "Usage: $0 [--scrape-only] [--request-upgrade] [--update-config <url> <weapon> <loc> <target> <move> <ttype>] [<login> [password] [friend]]"
     echo "Or configure accounts=(\"user:pass\") inside secret.cfg"
     exit 1
 fi

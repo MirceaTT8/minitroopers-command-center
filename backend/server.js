@@ -9,9 +9,7 @@ const {
   parseAllAccounts,
   getCachedOrParsedAccounts
 } = require('./parsers/htmlParser');
-
-
-const { getUpgradeAdviceWithLLM } = require('./services/llmAdvisorService');
+const { computeOptimalAiConfig } = require('./services/strategyEngine');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -44,31 +42,35 @@ function sanitizeBashScripts() {
 
 sanitizeBashScripts();
 
+function runTroopersConfigUpdate(accountId, computed) {
+  return new Promise((resolve, reject) => {
+    const scriptsDir = path.join(__dirname, 'scripts');
+    const { weapon, loc, target, move, ttype } = computed.params;
 
-// Add before the JSON 404 Catch-All:
-// POST /api/account/:id/ai-advice - Calls LLM with soldier + recruiter roster + strategy rules
-app.post('/api/account/:id/ai-advice', async (req, res) => {
-  try {
-    const accounts = getCachedOrParsedAccounts();
-    const targetId = req.params.id.toLowerCase();
-    const account = accounts.find((acc) => acc.id.toLowerCase() === targetId);
+    execFile(
+      'bash',
+      [
+        './troopers.sh',
+        '--update-config',
+        computed.configActionUrl,
+        String(weapon),
+        String(loc),
+        String(target),
+        String(move),
+        String(ttype),
+        accountId
+      ],
+      { cwd: scriptsDir, timeout: 60000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          return reject(new Error(stderr || error.message));
+        }
+        resolve(stdout);
+      }
+    );
+  });
+}
 
-    if (!account) {
-      return res.status(404).json({ error: `Account '${req.params.id}' not found` });
-    }
-
-    const strictLlm = Boolean(req.body?.strictLlm);
-    const advice = await getUpgradeAdviceWithLLM(account, accounts, { strictLlm });
-    res.json(advice);
-  } catch (err) {
-    console.error('AI advice error:', err);
-    res.status(err.statusCode || 503).json({
-      error: 'Failed to generate AI upgrade advice',
-      errorCode: err.code || 'LLM_ERROR',
-      details: err.message,
-    });
-  }
-});
 // GET /api/accounts - Parses raw_html folders and returns all accounts
 app.get('/api/accounts', (req, res) => {
   try {
@@ -112,7 +114,7 @@ app.post('/api/accounts/sync', (req, res) => {
   execFile(
     'bash',
     [scriptToRun, '--scrape-only'],
-    { cwd: scriptsDir, timeout: 1200000 },
+    { cwd: scriptsDir, timeout: 120000 },
     (error, stdout, stderr) => {
       if (error) {
         console.error('Sync script error:', stderr || error.message);
@@ -138,6 +140,102 @@ app.post('/api/accounts/sync', (req, res) => {
       }
     }
   );
+});
+
+// POST /api/accounts/auto-config - Computes & submits optimal AI config for all (or selected) accounts
+app.post('/api/accounts/auto-config', async (req, res) => {
+  sanitizeBashScripts();
+  try {
+    const allAccounts = parseAllAccounts();
+    const filterIds = Array.isArray(req.body?.accountIds)
+      ? new Set(req.body.accountIds.map((id) => String(id).toLowerCase()))
+      : null;
+
+    const targets = filterIds
+      ? allAccounts.filter((acc) => filterIds.has(acc.id.toLowerCase()))
+      : allAccounts;
+
+    const results = [];
+
+    for (const acc of targets) {
+      const soldier = acc.firstSoldier;
+      if (!soldier || !soldier.configActionUrl) {
+        results.push({
+          accountId: acc.id,
+          status: 'skipped',
+          reason: 'Missing configActionUrl (account may have a pending level-up or no t0.html)'
+        });
+        continue;
+      }
+
+      const computed = computeOptimalAiConfig(soldier);
+      try {
+        await runTroopersConfigUpdate(acc.id, computed);
+        results.push({
+          accountId: acc.id,
+          status: 'updated',
+          archetype: computed.archetype,
+          applied: computed.labels
+        });
+      } catch (err) {
+        results.push({
+          accountId: acc.id,
+          status: 'failed',
+          error: err.message
+        });
+      }
+    }
+
+    const updatedAccounts = parseAllAccounts();
+    res.json({
+      message: `Auto-configured ${results.filter((r) => r.status === 'updated').length}/${targets.length} accounts`,
+      results,
+      accounts: updatedAccounts
+    });
+  } catch (err) {
+    console.error('Auto-config bulk error:', err);
+    res.status(500).json({
+      error: 'Bulk auto-config failed',
+      details: err.message
+    });
+  }
+});
+
+// POST /api/account/:id/auto-config - Computes & submits optimal AI config for a single account
+app.post('/api/account/:id/auto-config', async (req, res) => {
+  sanitizeBashScripts();
+  const accountId = req.params.id.toLowerCase();
+
+  try {
+    const account = parseAccountFolder(accountId);
+    if (!account || !account.firstSoldier) {
+      return res.status(404).json({ error: `Account '${accountId}' not found` });
+    }
+    if (!account.firstSoldier.configActionUrl) {
+      return res.status(400).json({
+        error: `Account '${accountId}' has no configActionUrl (pending level-up or missing t0.html)`
+      });
+    }
+
+    const computed = computeOptimalAiConfig(account.firstSoldier);
+    const log = await runTroopersConfigUpdate(accountId, computed);
+
+    parseAllAccounts();
+    const updatedAccount = parseAccountFolder(accountId);
+
+    res.json({
+      message: `Auto-configured ${accountId} (${computed.archetype})`,
+      archetype: computed.archetype,
+      applied: computed.labels,
+      log,
+      account: updatedAccount
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: `Auto-config failed for ${accountId}`,
+      details: err.message
+    });
+  }
 });
 
 // POST /api/account/:id/request-upgrade - Sends upgrade request on /t/0 and parses upgrade options

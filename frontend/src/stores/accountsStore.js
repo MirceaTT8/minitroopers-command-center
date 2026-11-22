@@ -4,6 +4,7 @@ import {
   fetchAllAccounts,
   fetchAccountById,
   triggerAccountsSync,
+  triggerAutoConfigAll,
   requestSoldierUpgrade,
   selectSoldierUpgrade,
   fetchAiUpgradeAdvice,
@@ -29,6 +30,8 @@ export const useAccountsStore = defineStore('accounts', () => {
   const accounts = ref([])
   const loading = ref(false)
   const syncing = ref(false)
+  const autoConfiguring = ref(false)
+  const autoConfigMessage = ref('')
   const upgradingAccountIds = ref({})
   const error = ref('')
 
@@ -125,6 +128,26 @@ export const useAccountsStore = defineStore('accounts', () => {
     }
   }
 
+  async function autoConfigureAll(accountIds = null) {
+    if (autoConfiguring.value || syncing.value || autoUpgrading.value) return null
+    autoConfiguring.value = true
+    autoConfigMessage.value = ''
+    error.value = ''
+    try {
+      const result = await triggerAutoConfigAll(accountIds)
+      if (Array.isArray(result.accounts)) {
+        accounts.value = result.accounts
+      }
+      autoConfigMessage.value = result.message || 'Auto-config complete'
+      return result
+    } catch (err) {
+      error.value = err.message
+      return null
+    } finally {
+      autoConfiguring.value = false
+    }
+  }
+
   async function getAccount(accountId) {
     const existing = accounts.value.find(
       (acc) => acc.id.toLowerCase() === accountId.toLowerCase()
@@ -188,7 +211,7 @@ export const useAccountsStore = defineStore('accounts', () => {
    * - Strictly skips & leaves a trooper alone for the whole run on any LLM or server error
    */
   async function autoUpgradeAllAccounts(recruiterFilter = 'ALL') {
-    if (autoUpgrading.value || syncing.value) return
+    if (autoUpgrading.value || syncing.value || autoConfiguring.value) return
 
     autoUpgrading.value = true
     autoUpgradeStopRequested.value = false
@@ -425,6 +448,8 @@ export const useAccountsStore = defineStore('accounts', () => {
     accounts,
     loading,
     syncing,
+    autoConfiguring,
+    autoConfigMessage,
     upgradingAccountIds,
     error,
     readyToUpgradeCount,
@@ -434,6 +459,7 @@ export const useAccountsStore = defineStore('accounts', () => {
     autoUpgradeProgress,
     loadAccounts,
     syncAccounts,
+    autoConfigureAll,
     getAccount,
     requestUpgradeForAccount,
     chooseUpgradeForAccount,

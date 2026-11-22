@@ -6,6 +6,47 @@ const SCRIPTS_DIR = path.join(__dirname, '..', 'scripts');
 const CONFIG_DIR = path.join(__dirname, '..', 'config');
 
 /**
+ * Exact POST values for form#config dropdowns on /t/0
+ */
+const AI_CONFIG_OPTION_VALUES = {
+  loc: {
+    'Anywhere!': '-1',
+    'In the head!': '0',
+    'Straight in the heart!': '1',
+    'Right lung': '2',
+    'Gutshot': '3',
+    'Gutshot (nasty)': '3',
+    'Left arm': '4',
+    'Right arm': '5',
+    'Left leg': '6',
+    'Right leg': '7'
+  },
+  target: {
+    'The closest': '0',
+    'The easiest': '1',
+    'The weakest (yeah boi!)': '2',
+    'The biggest threat': '3'
+  },
+  move: {
+    Hunter: '0',
+    Standard: '1',
+    Defender: '2'
+  },
+  ttype: {
+    Default: '-1',
+    Soldier: '0',
+    Doctor: '1',
+    Pilot: '2',
+    Munitions: '3',
+    Scout: '4',
+    Spy: '5',
+    'Comms. Officier': '6',
+    'Comms. Officer': '6',
+    Saboteur: '7'
+  }
+};
+
+/**
  * Exact 30-500 Recruit Class Scaling Matrix anchors from Sheet 1 of
  * Mini_Troopers_Raid_and_Army_Strategy-v2.xlsx
  */
@@ -274,7 +315,9 @@ const ARCHETYPES = [
       'sprinter'
     ],
     recommendedStyle: 'Hunter',
-    recommendedTarget: 'Gutshot'
+    recommendedTarget: 'Gutshot',
+    recommendedVictim: 'The closest',
+    recommendedPriorityTarget: 'Default'
   },
   {
     id: 'armor_piercing_bruiser',
@@ -299,7 +342,9 @@ const ARCHETYPES = [
       'suspicious'
     ],
     recommendedStyle: 'Standard',
-    recommendedTarget: 'Gutshot'
+    recommendedTarget: 'Gutshot',
+    recommendedVictim: 'The closest',
+    recommendedPriorityTarget: 'Default'
   },
   {
     id: 'crit_burst_assassin',
@@ -324,7 +369,9 @@ const ARCHETYPES = [
       'paralysing_shells'
     ],
     recommendedStyle: 'Standard',
-    recommendedTarget: 'In the head!'
+    recommendedTarget: 'In the head!',
+    recommendedVictim: 'The weakest (yeah boi!)',
+    recommendedPriorityTarget: 'Default'
   },
   {
     id: 'heavy_suppression_gunner',
@@ -346,7 +393,9 @@ const ARCHETYPES = [
       'trigger_happy'
     ],
     recommendedStyle: 'Standard',
-    recommendedTarget: 'Anywhere!'
+    recommendedTarget: 'Anywhere!',
+    recommendedVictim: 'The closest',
+    recommendedPriorityTarget: 'Default'
   },
   {
     id: 'global_executioner_sniper',
@@ -368,7 +417,9 @@ const ARCHETYPES = [
       'on_point'
     ],
     recommendedStyle: 'Defender',
-    recommendedTarget: 'In the head!'
+    recommendedTarget: 'In the head!',
+    recommendedVictim: 'The biggest threat',
+    recommendedPriorityTarget: 'Default'
   },
   {
     id: 'explosive_demolitions',
@@ -388,7 +439,9 @@ const ARCHETYPES = [
       'on_point'
     ],
     recommendedStyle: 'Defender',
-    recommendedTarget: 'Anywhere!'
+    recommendedTarget: 'Anywhere!',
+    recommendedVictim: 'The closest',
+    recommendedPriorityTarget: 'Default'
   },
   {
     id: 'combat_medic_specialist',
@@ -416,7 +469,9 @@ const ARCHETYPES = [
       'camouflage'
     ],
     recommendedStyle: 'Defender',
-    recommendedTarget: 'Anywhere!'
+    recommendedTarget: 'Anywhere!',
+    recommendedVictim: 'The closest',
+    recommendedPriorityTarget: 'Default'
   }
 ];
 
@@ -672,7 +727,7 @@ function inspectSoldierLoadout(soldier) {
 }
 
 /**
- * Detects a soldier's combat archetype from their unlocked skills and Favourite Weapon
+ * Detects a soldier's combat archetype from their Lv. 6 role, unlocked skills, and Favourite Weapon
  */
 function detectSoldierArchetype(soldier) {
   const loadout = inspectSoldierLoadout(soldier);
@@ -687,7 +742,12 @@ function detectSoldierArchetype(soldier) {
     return ARCHETYPES[6];
   }
 
-  // Match Favourite Weapon first
+  // Munitions role prioritizes Explosive / AoE Demolitions (Defender)
+  if (loadout.ownedRoles.includes('munitions') || loadout.skillKeys.has('munitions')) {
+    return ARCHETYPES[5];
+  }
+
+  // Soldier, Pilot, Spy (or < Lvl 6): match Favourite Weapon first
   if (favWeaponKey) {
     for (const arch of ARCHETYPES) {
       if (arch.primaryWeapons.includes(favWeaponKey)) {
@@ -703,12 +763,74 @@ function detectSoldierArchetype(soldier) {
     }
   }
 
-  // Explosive / Munitions role fallback
-  if (loadout.skillKeys.has('munitions')) {
-    return ARCHETYPES[5];
+  return ARCHETYPES[1]; // Default: Armor-Piercing Mid-Range Bruiser
+}
+
+/**
+ * Picks the best available weapon option from form#config select[name="weapon"]
+ */
+function pickBestWeaponOption(soldier, archetype) {
+  const options = (soldier?.weaponOptions || []).filter(
+    (opt) => String(opt.value) !== '-1'
+  );
+  if (options.length === 0) {
+    return { value: '-1', name: 'None' };
   }
 
-  return ARCHETYPES[1]; // Default: Armor-Piercing Mid-Range Bruiser
+  const findMatch = (preferredKeys) => {
+    for (const prefKey of preferredKeys || []) {
+      const found = options.find((opt) => normalizeKey(opt.name) === prefKey);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  // 1. Best primary weapon for the archetype
+  const primaryMatch = findMatch(archetype?.primaryWeapons);
+  if (primaryMatch) return primaryMatch;
+
+  // 2. Best backup weapon for the archetype
+  const backupMatch = findMatch(archetype?.backupWeapons);
+  if (backupMatch) return backupMatch;
+
+  // 3. Fallback: first non-Pistol/non-Knife unlocked weapon, else first unlocked weapon
+  const nonStarter = options.find(
+    (opt) => !['pistol', 'knife'].includes(normalizeKey(opt.name))
+  );
+  return nonStarter || options[0];
+}
+
+/**
+ * Computes the optimal 5 AI Config dropdown values (POST params + display labels) for a soldier
+ */
+function computeOptimalAiConfig(soldier) {
+  const archetype = detectSoldierArchetype(soldier);
+  const chosenWeapon = pickBestWeaponOption(soldier, archetype);
+
+  const locLabel = archetype.recommendedTarget || 'Anywhere!';
+  const targetLabel = archetype.recommendedVictim || 'The closest';
+  const moveLabel = archetype.recommendedStyle || 'Standard';
+  const ttypeLabel = archetype.recommendedPriorityTarget || 'Default';
+
+  return {
+    archetypeId: archetype.id,
+    archetype: archetype.name,
+    configActionUrl: soldier?.configActionUrl || null,
+    params: {
+      weapon: String(chosenWeapon.value),
+      loc: AI_CONFIG_OPTION_VALUES.loc[locLabel] ?? '-1',
+      target: AI_CONFIG_OPTION_VALUES.target[targetLabel] ?? '0',
+      move: AI_CONFIG_OPTION_VALUES.move[moveLabel] ?? '1',
+      ttype: AI_CONFIG_OPTION_VALUES.ttype[ttypeLabel] ?? '-1'
+    },
+    labels: {
+      favouriteWeapon: chosenWeapon.name,
+      favouriteTarget: locLabel === 'Gutshot' ? 'Gutshot (nasty)' : locLabel,
+      preferredVictim: targetLabel,
+      fightingStyle: moveLabel,
+      priorityTarget: ttypeLabel
+    }
+  };
 }
 
 /**
@@ -1495,11 +1617,14 @@ function attachAiAdviceToAccounts(accounts = []) {
 }
 
 module.exports = {
+  AI_CONFIG_OPTION_VALUES,
   CLASS_SCALING_ANCHORS,
   ROLE_METADATA,
   ARCHETYPES,
   getTargetClassSplit,
   detectSoldierArchetype,
+  pickBestWeaponOption,
+  computeOptimalAiConfig,
   evaluateCollectiveRaidPool,
   evaluateRecruiterPools,
   recommendBestUpgrade,

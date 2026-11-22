@@ -8,9 +8,6 @@ const DATA_DIR = path.join(__dirname, '..', 'data');
 const RAW_HTML_DIR = path.join(DATA_DIR, 'raw_html');
 const CACHE_FILE = path.join(DATA_DIR, 'accountsCache.json');
 
-// Add at the top of backend/parsers/htmlParser.js:
-const { attachAiAdviceToAccounts } = require('../services/strategyEngine');
-
 const skillsDictionaryRaw = JSON.parse(
   fs.readFileSync(path.join(CONFIG_DIR, 'skillsDictionary.json'), 'utf-8')
 );
@@ -179,6 +176,18 @@ function getSelectedOptionText($, selectName) {
     return selected.first().text().trim();
   }
   return select.find('option').first().text().trim() || 'Unknown';
+}
+
+function getWeaponOptions($) {
+  const options = [];
+  $('form#config select[name="weapon"] option').each((_, el) => {
+    const value = $(el).attr('value');
+    const name = $(el).text().trim();
+    if (value !== undefined && name) {
+      options.push({ value: String(value), name });
+    }
+  });
+  return options;
 }
 
 function extractUpgradeChoicesFromHtml(htmlContent) {
@@ -408,8 +417,17 @@ function parseAccountFolder(accountId, recruitersMap = null) {
     availableUpgrades = extractUpgradeChoicesFromHtml(primaryT0Html);
   }
 
-  // 7. Parse the 5 AI Config Dropdowns
-  const hasConfigForm = $stats('form#config').length > 0;
+  // 7. Parse the 5 AI Config Dropdowns, Action URL, and Weapon Options
+  const configForm = $stats('form#config');
+  const hasConfigForm = configForm.length > 0;
+  const configActionUrl = hasConfigForm
+    ? configForm.attr('action') || null
+    : previousCache?.firstSoldier?.configActionUrl || null;
+
+  const weaponOptions = hasConfigForm
+    ? getWeaponOptions($stats)
+    : previousCache?.firstSoldier?.weaponOptions || [];
+
   const aiConfig = hasConfigForm
     ? {
         favouriteWeapon: getSelectedOptionText($stats, 'weapon'),
@@ -444,6 +462,8 @@ function parseAccountFolder(accountId, recruitersMap = null) {
       level,
       upgradeCost,
       levelupUrl,
+      configActionUrl,
+      weaponOptions,
       upgradeRequested: availableUpgrades.length > 0,
       aiConfig,
       skills: unlockedSkills,
@@ -477,11 +497,8 @@ function parseAllAccounts() {
     }
   }
 
-  // Attach AI advice & recruiter raid pool metrics across all accounts
-  const enrichedAccounts = attachAiAdviceToAccounts(accounts);
-
-  fs.writeFileSync(CACHE_FILE, JSON.stringify(enrichedAccounts, null, 2), 'utf-8');
-  return enrichedAccounts;
+  fs.writeFileSync(CACHE_FILE, JSON.stringify(accounts, null, 2), 'utf-8');
+  return accounts;
 }
 
 function getCachedOrParsedAccounts() {
@@ -489,6 +506,7 @@ function getCachedOrParsedAccounts() {
     try {
       const cached = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8'));
       if (Array.isArray(cached) && cached.length > 0) {
+        // Always refresh recruiter field from secret.cfg in case secret.cfg was edited
         const recruitersMap = loadRecruitersMapFromSecretCfg();
         for (const acc of cached) {
           const mappedRecruiter = recruitersMap.get(acc.id.toLowerCase());
@@ -498,8 +516,7 @@ function getCachedOrParsedAccounts() {
             acc.recruiter = null;
           }
         }
-        // Re-attach AI advice in case strategyEngine rules were updated
-        return attachAiAdviceToAccounts(cached);
+        return cached;
       }
     } catch (_) {
       return parseAllAccounts();
@@ -507,6 +524,7 @@ function getCachedOrParsedAccounts() {
   }
   return parseAllAccounts();
 }
+
 module.exports = {
   parseAccountFolder,
   parseAllAccounts,

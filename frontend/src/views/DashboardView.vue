@@ -13,24 +13,45 @@
       <div class="flex flex-wrap items-center gap-3">
         <button
           @click="store.loadAccounts()"
-          :disabled="store.loading || store.syncing || store.autoUpgrading"
+          :disabled="store.loading || store.syncing || store.autoUpgrading || store.autoConfiguring"
           class="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 px-4 py-2 rounded-lg font-bold text-sm cursor-pointer"
         >
           Refresh Cache
         </button>
         <button
           @click="store.syncAccounts()"
-          :disabled="store.syncing || store.autoUpgrading"
+          :disabled="store.syncing || store.autoUpgrading || store.autoConfiguring"
           class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-4 py-2 rounded-lg font-bold text-sm cursor-pointer"
         >
           {{ store.syncing ? 'Syncing Accounts...' : 'Sync All Accounts (--scrape-only)' }}
+        </button>
+
+        <!-- Auto-Configure All AI Dropdowns Button -->
+        <button
+          @click="handleAutoConfigAll"
+          :disabled="
+            store.syncing ||
+            store.loading ||
+            store.autoUpgrading ||
+            store.autoConfiguring ||
+            filteredAccounts.length === 0
+          "
+          class="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 px-4 py-2 rounded-lg font-bold text-sm cursor-pointer border border-purple-400"
+        >
+          {{
+            store.autoConfiguring
+              ? 'Auto-Configuring AI...'
+              : selectedRecruiter === 'ALL'
+                ? 'Auto-Configure All AI'
+                : `Auto-Configure ${selectedRecruiter} AI`
+          }}
         </button>
 
         <!-- Auto-Upgrade All (AI) / Stop Button -->
         <button
           v-if="!store.autoUpgrading"
           @click="handleAutoUpgradeAll"
-          :disabled="store.syncing || store.loading"
+          :disabled="store.syncing || store.loading || store.autoConfiguring"
           class="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-4 py-2 rounded-lg font-bold text-sm cursor-pointer border border-emerald-400"
         >
           {{
@@ -127,7 +148,7 @@
       <span class="text-xs font-bold text-slate-400 uppercase mr-1">Filter by Recruiter:</span>
       <button
         @click="selectedRecruiter = 'ALL'"
-        :disabled="store.autoUpgrading"
+        :disabled="store.autoUpgrading || store.autoConfiguring"
         class="px-3 py-1 rounded-lg text-xs font-bold cursor-pointer border transition-colors disabled:opacity-50"
         :class="
           selectedRecruiter === 'ALL'
@@ -141,7 +162,7 @@
         v-for="rec in recruiterOptions"
         :key="rec.name"
         @click="selectedRecruiter = rec.name"
-        :disabled="store.autoUpgrading"
+        :disabled="store.autoUpgrading || store.autoConfiguring"
         class="px-3 py-1 rounded-lg text-xs font-bold cursor-pointer border transition-colors disabled:opacity-50"
         :class="
           selectedRecruiter === rec.name
@@ -151,6 +172,13 @@
       >
         {{ rec.name }} ({{ rec.count }})
       </button>
+    </div>
+
+    <div
+      v-if="store.autoConfigMessage"
+      class="bg-purple-950/80 border border-purple-400 text-purple-200 p-4 rounded-lg mb-6 text-sm"
+    >
+      {{ store.autoConfigMessage }}
     </div>
 
     <div
@@ -176,7 +204,7 @@
         v-for="account in filteredAccounts"
         :key="account.id"
         :account="account"
-        :isUpgrading="store.isAccountUpgrading(account.id) || store.autoUpgrading"
+        :isUpgrading="store.isAccountUpgrading(account.id) || store.autoUpgrading || store.autoConfiguring"
         @select="goToAccountDetail"
         @request-upgrade="handleRequestUpgrade"
         @select-upgrade="handleSelectUpgrade"
@@ -214,7 +242,7 @@ const filteredAccounts = computed(() => {
 })
 
 function goToAccountDetail(accountId) {
-  if (store.autoUpgrading) return
+  if (store.autoUpgrading || store.autoConfiguring) return
   router.push(`/account/${accountId}`)
 }
 
@@ -224,6 +252,25 @@ async function handleRequestUpgrade(accountId) {
 
 async function handleSelectUpgrade({ accountId, selectUrl }) {
   await store.chooseUpgradeForAccount(accountId, selectUrl)
+}
+
+async function handleAutoConfigAll() {
+  const scopeLabel =
+    selectedRecruiter.value === 'ALL'
+      ? `ALL ${store.accounts.length} tracked accounts`
+      : `all ${filteredAccounts.value.length} accounts under Recruiter "${selectedRecruiter.value}"`
+
+  const confirmed = window.confirm(
+    `Auto-configure AI dropdowns (Weapon, Target, Victim, Style, Priority) for ${scopeLabel}?`
+  )
+  if (!confirmed) return
+
+  const ids =
+    selectedRecruiter.value === 'ALL'
+      ? null
+      : filteredAccounts.value.map((acc) => acc.id)
+
+  await store.autoConfigureAll(ids)
 }
 
 async function handleAutoUpgradeAll() {

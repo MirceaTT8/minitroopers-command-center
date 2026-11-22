@@ -25,6 +25,19 @@ export async function triggerAccountsSync() {
   return data
 }
 
+export async function triggerAutoConfigAll(accountIds = null) {
+  const response = await fetch('/api/accounts/auto-config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(accountIds ? { accountIds } : {}),
+  })
+  const data = await response.json()
+  if (!response.ok) {
+    throw new Error(data.details || data.error || 'Auto-config failed')
+  }
+  return data
+}
+
 export async function requestSoldierUpgrade(accountId) {
   const response = await fetch(
     `/api/account/${encodeURIComponent(accountId)}/request-upgrade`,
@@ -54,7 +67,6 @@ export async function selectSoldierUpgrade(accountId, selectUrl) {
   }
   return data
 }
-
 export async function fetchAiUpgradeAdvice(accountId, { strictLlm = false } = {}) {
   const response = await fetch(
     `/api/account/${encodeURIComponent(accountId)}/ai-advice`,
