@@ -2,10 +2,12 @@ name: Daily Mini Troopers Automation
 
 on:
   schedule:
-    # 1) Daily Battles: 19:30 UTC (21:30 EET / 22:30 EEST)
-    - cron: '30 19 * * *'
-    # 2) Auto-Upgrade (30m later): 20:00 UTC (22:00 EET / 23:00 EEST)
-    - cron: '0 20 * * *'
+    # 1) Daily Battles: 22:05 UTC (00:05 EET / 01:05 EEST)
+    - cron: '5 22 * * *'
+    # 2) Auto-Upgrade: 00:30 UTC (02:30 EET / 03:30 EEST)
+    - cron: '30 0 * * *'
+    # 3) Auto-Configure Soldier AI: 02:00 UTC (04:00 EET / 05:00 EEST)
+    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       task:
@@ -48,7 +50,7 @@ jobs:
           chmod 600 backend/scripts/secret.cfg
 
       - name: Run Daily Battles, Missions & Raids
-        if: github.event.schedule == '30 19 * * *' || github.event.inputs.task == 'battles'
+        if: github.event.schedule == '5 22 * * *' || github.event.inputs.task == 'battles'
         working-directory: ./backend/scripts
         run: |
           chmod +x troopers.sh run_accounts.sh
@@ -60,12 +62,12 @@ jobs:
         run: node scripts/autoUpgrade.js --dry-run
 
       - name: Run Auto-Upgrade (Live)
-        if: github.event.schedule == '0 20 * * *' || github.event.inputs.task == 'upgrade-live'
+        if: github.event.schedule == '30 0 * * *' || github.event.inputs.task == 'upgrade-live'
         working-directory: ./backend
         run: node scripts/autoUpgrade.js
 
       - name: Run Auto-Configure Soldier AI
-        if: github.event.inputs.task == 'auto-config'
+        if: github.event.schedule == '0 2 * * *' || github.event.inputs.task == 'auto-config'
         working-directory: ./backend
         run: |
           chmod +x scripts/troopers.sh scripts/run_accounts.sh
