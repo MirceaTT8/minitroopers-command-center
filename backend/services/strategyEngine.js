@@ -47,6 +47,68 @@ const AI_CONFIG_OPTION_VALUES = {
 };
 
 /**
+ * [ADDED] Global Weapon Priority / Tier List (Highest -> Lowest).
+ * Used to always equip the trooper's strongest unlocked weapon as Favorite Weapon
+ * on /t/0 instead of wasting opening turns on starter weapons (Pistol, Shotgun, Sniper, etc.).
+ */
+const WEAPON_PRIORITY_TIER_LIST = [
+  // S+ / S Tier: Heavy Machine Guns, Top Snipers, High-Impact Launchers
+  'minigun',
+  'comanche_auto',
+  'heavy_machine_gun',
+  'gatling_gun',
+  'sparrowhawk',
+  'mos_teck',
+  'ck_magellan',
+  'bazooka_m25',
+  'infernal_tube',
+
+  // A+ / A Tier: Top SMGs, Assault Rifles, Shotguns, Heavy Snipers, Launchers
+  'ump',
+  'thompson',
+  'famas',
+  'ak47',
+  'semi_auto_shotgun',
+  'pump_action_shotgun',
+  'lizaro_jungle',
+  'm16',
+  'double_barrelled_shotgun',
+  'scattergun',
+  'bazooka_m1',
+  'bazooka',
+  'rocket_launcher',
+
+  // B Tier: Upgraded Sidearms (strictly prioritized over starter weapons)
+  'dual_pistols',
+  'revolver',
+  'desert_eagle',
+  'beretta',
+
+  // C Tier: Starter Weapons
+  'assault_rifle',
+  'sniper',
+  'sniper_rifle',
+  'shotgun',
+  'pistol',
+
+  // F Tier: Melee Fallback
+  'knife'
+];
+
+/**
+ * [ADDED] Total rocket ammo capacity per launcher (from skillsDictionary.json).
+ * Used to enforce Defender style ONLY on rocket troopers whose launcher has >= 3 total rockets
+ * (e.g., Bazooka M25 = 6 total) and NEVER on Infernal Tube (1) or launchers with < 3 total rockets.
+ */
+const ROCKET_LAUNCHER_TOTAL_ROCKETS = {
+  bazooka_m25: 6, // 3 mag / 6 total shots -> Defender allowed
+  bazooka_m1: 2, // 1 mag / 2 total shots (< 3) -> Standard
+  bazooka: 2, // Alias for Bazooka M1 (< 3) -> Standard
+  rocket_launcher: 2, // 1 mag / 2 total shots (< 3) -> Standard
+  infernal_tube: 1 // 1 mag / 1 total shot (< 3) -> Standard
+};
+
+/**
  * Exact 30-500 Recruit Class Scaling Matrix anchors from Sheet 1 of
  * Mini_Troopers_Raid_and_Army_Strategy-v2.xlsx
  */
@@ -255,7 +317,7 @@ const WEAPON_GROUPS = {
     'scattergun',
     'shotgun'
   ],
-  snipers: ['sparrowhawk', 'mos_teck', 'ck_magellan', 'lizaro_jungle', 'sniper'],
+  snipers: ['sparrowhawk', 'mos_teck', 'ck_magellan', 'lizaro_jungle', 'sniper', 'sniper_rifle'],
   bruiserSmgsRifles: ['thompson', 'famas', 'ump', 'ak47', 'm16', 'assault_rifle'],
   highCritWeapons: [
     'sparrowhawk',
@@ -264,6 +326,7 @@ const WEAPON_GROUPS = {
     'ck_magellan',
     'lizaro_jungle',
     'sniper',
+    'sniper_rifle',
     'ak47',
     'm16'
   ],
@@ -280,7 +343,7 @@ const WEAPON_GROUPS = {
     'assault_rifle',
     'dual_pistols'
   ],
-  explosiveLaunchers: ['bazooka_m25', 'infernal_tube', 'rocket_launcher', 'bazooka_m1'],
+  explosiveLaunchers: ['bazooka_m25', 'infernal_tube', 'rocket_launcher', 'bazooka_m1', 'bazooka'],
   backupSidearms: ['revolver', 'desert_eagle', 'beretta', 'dual_pistols', 'pistol']
 };
 
@@ -400,7 +463,7 @@ const ARCHETYPES = [
   {
     id: 'global_executioner_sniper',
     name: 'Global Executioner Sniper',
-    primaryWeapons: ['sparrowhawk', 'mos_teck', 'ck_magellan', 'lizaro_jungle', 'sniper'],
+    primaryWeapons: ['sparrowhawk', 'mos_teck', 'ck_magellan', 'lizaro_jungle', 'sniper', 'sniper_rifle'],
     backupWeapons: ['desert_eagle', 'revolver', 'beretta'],
     coreSkills: [
       'loader',
@@ -424,7 +487,7 @@ const ARCHETYPES = [
   {
     id: 'explosive_demolitions',
     name: 'Explosive / AoE Demolitions',
-    primaryWeapons: ['bazooka_m25', 'infernal_tube', 'rocket_launcher', 'bazooka_m1'],
+    primaryWeapons: ['bazooka_m25', 'infernal_tube', 'rocket_launcher', 'bazooka_m1', 'bazooka'],
     backupWeapons: ['famas', 'pump_action_shotgun', 'revolver'],
     coreSkills: [
       'loader',
@@ -438,7 +501,9 @@ const ARCHETYPES = [
       'hard_boiled',
       'on_point'
     ],
-    recommendedStyle: 'Defender',
+    // [UPDATED] Default to Standard here; resolveFightingStyle() upgrades to Defender
+    // ONLY if the rocket trooper carries a launcher with >= 3 total rockets (not Infernal Tube).
+    recommendedStyle: 'Standard',
     recommendedTarget: 'Anywhere!',
     recommendedVictim: 'The closest',
     recommendedPriorityTarget: 'Default'
@@ -468,7 +533,8 @@ const ARCHETYPES = [
       'bulletproof_vest',
       'camouflage'
     ],
-    recommendedStyle: 'Defender',
+    // [UPDATED] Switched from Defender to Standard so medics/specialists don't waste turns retreating.
+    recommendedStyle: 'Standard',
     recommendedTarget: 'Anywhere!',
     recommendedVictim: 'The closest',
     recommendedPriorityTarget: 'Default'
@@ -483,6 +549,16 @@ function normalizeKey(str) {
     .replace(/cold-blooded/g, 'cold_blooded')
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_|_$/g, '');
+}
+
+/**
+ * [ADDED] Returns the priority rank of a weapon from WEAPON_PRIORITY_TIER_LIST
+ * (lower index = higher priority; unknown weapons sort to the bottom).
+ */
+function getWeaponPriorityRank(weaponNameOrKey) {
+  const key = normalizeKey(weaponNameOrKey);
+  const idx = WEAPON_PRIORITY_TIER_LIST.indexOf(key);
+  return idx === -1 ? WEAPON_PRIORITY_TIER_LIST.length : idx;
 }
 
 /**
@@ -727,13 +803,14 @@ function inspectSoldierLoadout(soldier) {
 }
 
 /**
- * Detects a soldier's combat archetype from their Lv. 6 role, unlocked skills, and Favourite Weapon
+ * Detects a soldier's combat archetype from their Lv. 6 role, unlocked skills,
+ * and highest-tier unlocked weapon (instead of getting locked onto a starter Favourite Weapon).
  */
 function detectSoldierArchetype(soldier) {
   const loadout = inspectSoldierLoadout(soldier);
   const favWeaponKey = normalizeKey(soldier?.aiConfig?.favouriteWeapon || '');
 
-  // Global Specialists & Medics use the survivability/defender archetype
+  // Global Specialists & Medics use the specialist archetype
   if (
     loadout.ownedRoles.some((r) =>
       ['saboteur', 'comms_officer', 'doctor', 'scout'].includes(r)
@@ -742,12 +819,34 @@ function detectSoldierArchetype(soldier) {
     return ARCHETYPES[6];
   }
 
-  // Munitions role prioritizes Explosive / AoE Demolitions (Defender)
+  // Munitions role prioritizes Explosive / AoE Demolitions
   if (loadout.ownedRoles.includes('munitions') || loadout.skillKeys.has('munitions')) {
     return ARCHETYPES[5];
   }
 
-  // Soldier, Pilot, Spy (or < Lvl 6): match Favourite Weapon first
+  // [UPDATED] Rank all owned weapons + selectable weaponOptions by WEAPON_PRIORITY_TIER_LIST
+  // so a newly unlocked top-tier weapon (e.g. Minigun, CK-Magellan) overrides an old starter Favorite Weapon.
+  const candidateWeaponKeys = new Set(loadout.ownedWeapons);
+  for (const opt of soldier?.weaponOptions || []) {
+    if (String(opt.value) !== '-1') {
+      const k = normalizeKey(opt.name);
+      if (k && k !== 'none') candidateWeaponKeys.add(k);
+    }
+  }
+
+  const rankedWeapons = Array.from(candidateWeaponKeys).sort(
+    (a, b) => getWeaponPriorityRank(a) - getWeaponPriorityRank(b)
+  );
+
+  for (const weaponKey of rankedWeapons) {
+    for (const arch of ARCHETYPES) {
+      if (arch.primaryWeapons.includes(weaponKey)) {
+        return arch;
+      }
+    }
+  }
+
+  // Fallback to currently set Favourite Weapon if no skill/option matched
   if (favWeaponKey) {
     for (const arch of ARCHETYPES) {
       if (arch.primaryWeapons.includes(favWeaponKey)) {
@@ -756,48 +855,113 @@ function detectSoldierArchetype(soldier) {
     }
   }
 
-  // Match any owned Primary Weapon
-  for (const arch of ARCHETYPES) {
-    if (arch.primaryWeapons.some((w) => loadout.skillKeys.has(w))) {
-      return arch;
-    }
-  }
-
   return ARCHETYPES[1]; // Default: Armor-Piercing Mid-Range Bruiser
 }
 
 /**
- * Picks the best available weapon option from form#config select[name="weapon"]
+ * [UPDATED] Picks the highest-tier unlocked weapon from form#config select[name="weapon"]
+ * using WEAPON_PRIORITY_TIER_LIST so troopers never waste opening turns on starter guns.
  */
 function pickBestWeaponOption(soldier, archetype) {
   const options = (soldier?.weaponOptions || []).filter(
-    (opt) => String(opt.value) !== '-1'
+    (opt) => String(opt.value) !== '-1' && normalizeKey(opt.name) !== 'none'
   );
   if (options.length === 0) {
     return { value: '-1', name: 'None' };
   }
 
-  const findMatch = (preferredKeys) => {
-    for (const prefKey of preferredKeys || []) {
-      const found = options.find((opt) => normalizeKey(opt.name) === prefKey);
-      if (found) return found;
-    }
-    return null;
-  };
+  // 1. Sort all unlocked weapons by WEAPON_PRIORITY_TIER_LIST rank (lowest index = best weapon)
+  const rankedOptions = [...options].sort((a, b) => {
+    const rankDiff = getWeaponPriorityRank(a.name) - getWeaponPriorityRank(b.name);
+    if (rankDiff !== 0) return rankDiff;
 
-  // 1. Best primary weapon for the archetype
-  const primaryMatch = findMatch(archetype?.primaryWeapons);
-  if (primaryMatch) return primaryMatch;
+    // Tie-breaker: prefer archetype primary weapon, then backup weapon
+    const aKey = normalizeKey(a.name);
+    const bKey = normalizeKey(b.name);
+    const aPrimary = archetype?.primaryWeapons?.includes(aKey) ? 0 : 1;
+    const bPrimary = archetype?.primaryWeapons?.includes(bKey) ? 0 : 1;
+    if (aPrimary !== bPrimary) return aPrimary - bPrimary;
 
-  // 2. Best backup weapon for the archetype
-  const backupMatch = findMatch(archetype?.backupWeapons);
-  if (backupMatch) return backupMatch;
+    const aBackup = archetype?.backupWeapons?.includes(aKey) ? 0 : 1;
+    const bBackup = archetype?.backupWeapons?.includes(bKey) ? 0 : 1;
+    return aBackup - bBackup;
+  });
 
-  // 3. Fallback: first non-Pistol/non-Knife unlocked weapon, else first unlocked weapon
+  // Return the highest-ranked known weapon
+  if (getWeaponPriorityRank(rankedOptions[0].name) < WEAPON_PRIORITY_TIER_LIST.length) {
+    return rankedOptions[0];
+  }
+
+  // 2. Fallback for any unrecognized custom weapon name: first non-Pistol/non-Knife option
   const nonStarter = options.find(
     (opt) => !['pistol', 'knife'].includes(normalizeKey(opt.name))
   );
   return nonStarter || options[0];
+}
+
+/**
+ * [ADDED] Resolves the optimal Fighting Style (Hunter / Standard / Defender) for a soldier.
+ * Rules:
+ *  - Defender is kept ONLY for:
+ *      1) Long-range snipers (when equipped with a sniper rifle), OR
+ *      2) Rocket troopers who do NOT have Infernal Tube (or any rocket launcher with < 3 total rockets).
+ *         (i.e. Bazooka M25 with 6 total rockets qualifies for Defender; Infernal Tube (1),
+ *          Bazooka M1 (2), and Rocket Launcher (2) are forced to Standard.)
+ *  - Close-Range Shock shotgunners keep Hunter when using a shotgun.
+ *  - Everyone else (including Combat Medics / Global Specialists) uses Standard.
+ */
+function resolveFightingStyle(soldier, archetype, chosenWeapon) {
+  const loadout = inspectSoldierLoadout(soldier);
+  const chosenKey = normalizeKey(chosenWeapon?.name || '');
+
+  // Collect all rocket launchers the soldier owns (from skills + weaponOptions)
+  const ownedLaunchers = new Set(
+    loadout.ownedWeapons.filter((w) => WEAPON_GROUPS.explosiveLaunchers.includes(w))
+  );
+  for (const opt of soldier?.weaponOptions || []) {
+    if (String(opt.value) !== '-1') {
+      const k = normalizeKey(opt.name);
+      if (WEAPON_GROUPS.explosiveLaunchers.includes(k)) {
+        ownedLaunchers.add(k);
+      }
+    }
+  }
+
+  // 1. Long-range sniper -> Keep Defender
+  if (WEAPON_GROUPS.snipers.includes(chosenKey)) {
+    return 'Defender';
+  }
+
+  // 2. Rocket trooper -> Keep Defender ONLY if they have a launcher with >= 3 total rockets
+  //    AND do NOT carry Infernal Tube or any launcher with < 3 total rockets
+  if (
+    WEAPON_GROUPS.explosiveLaunchers.includes(chosenKey) ||
+    archetype?.id === 'explosive_demolitions'
+  ) {
+    const hasLowAmmoOrInfernalLauncher =
+      ownedLaunchers.has('infernal_tube') ||
+      Array.from(ownedLaunchers).some(
+        (launcherKey) => (ROCKET_LAUNCHER_TOTAL_ROCKETS[launcherKey] ?? 0) < 3
+      );
+
+    const chosenTotalRockets = ROCKET_LAUNCHER_TOTAL_ROCKETS[chosenKey] ?? 0;
+
+    if (chosenTotalRockets >= 3 && !hasLowAmmoOrInfernalLauncher) {
+      return 'Defender';
+    }
+    return 'Standard';
+  }
+
+  // 3. Close-Range Shock shotgunners -> Keep Hunter when equipped with a shotgun
+  if (
+    archetype?.id === 'close_range_shock' &&
+    WEAPON_GROUPS.shotguns.includes(chosenKey)
+  ) {
+    return 'Hunter';
+  }
+
+  // 4. Default for Combat Medics, Global Specialists, Gunners, Bruisers, Assassins -> Standard
+  return 'Standard';
 }
 
 /**
@@ -809,7 +973,8 @@ function computeOptimalAiConfig(soldier) {
 
   const locLabel = archetype.recommendedTarget || 'Anywhere!';
   const targetLabel = archetype.recommendedVictim || 'The closest';
-  const moveLabel = archetype.recommendedStyle || 'Standard';
+  // [UPDATED] Dynamically resolve Fighting Style based on sniper / rocket count rules
+  const moveLabel = resolveFightingStyle(soldier, archetype, chosenWeapon);
   const ttypeLabel = archetype.recommendedPriorityTarget || 'Default';
 
   return {
@@ -1501,6 +1666,9 @@ function scoreUpgradeOption(opt, soldier, loadout, archetype, recruiterPool) {
 function recommendBestUpgrade(soldier, recruiterPool) {
   const archetype = detectSoldierArchetype(soldier);
   const loadout = inspectSoldierLoadout(soldier);
+  // [UPDATED] Use computed optimal weapon & fighting style in advice output
+  const optimalConfig = computeOptimalAiConfig(soldier);
+  const resolvedStyle = optimalConfig.labels.fightingStyle;
   const options = Array.isArray(soldier?.availableUpgrades)
     ? soldier.availableUpgrades
     : [];
@@ -1527,14 +1695,15 @@ function recommendBestUpgrade(soldier, recruiterPool) {
       archetype: {
         id: archetype.id,
         name: archetype.name,
-        recommendedStyle: archetype.recommendedStyle,
-        recommendedTarget: archetype.recommendedTarget
+        recommendedStyle: resolvedStyle,
+        recommendedTarget: archetype.recommendedTarget,
+        recommendedWeapon: optimalConfig.labels.favouriteWeapon
       },
       recruiterSummary: recSummary,
       topClassNeeds: topNeedsText,
       scoredOptions: [],
       reasons: [
-        `Detected Archetype: ${archetype.name} (AI Style: ${archetype.recommendedStyle}, Target: ${archetype.recommendedTarget}).`,
+        `Detected Archetype: ${archetype.name} (AI Weapon: ${optimalConfig.labels.favouriteWeapon}, Style: ${resolvedStyle}, Target: ${archetype.recommendedTarget}).`,
         topNeedsText,
         recSummary
       ]
@@ -1576,15 +1745,16 @@ function recommendBestUpgrade(soldier, recruiterPool) {
     archetype: {
       id: archetype.id,
       name: archetype.name,
-      recommendedStyle: archetype.recommendedStyle,
-      recommendedTarget: archetype.recommendedTarget
+      recommendedStyle: resolvedStyle,
+      recommendedTarget: archetype.recommendedTarget,
+      recommendedWeapon: optimalConfig.labels.favouriteWeapon
     },
     recruiterSummary: recSummary,
     topClassNeeds: topNeedsText,
     scoredOptions,
     reasons: [
       ...best.reasons,
-      `Archetype AI Config: Fighting Style -> ${archetype.recommendedStyle} | Target -> ${archetype.recommendedTarget}.`,
+      `Archetype AI Config: Weapon -> ${optimalConfig.labels.favouriteWeapon} | Fighting Style -> ${resolvedStyle} | Target -> ${archetype.recommendedTarget}.`,
       topNeedsText
     ]
   };
@@ -1618,10 +1788,14 @@ function attachAiAdviceToAccounts(accounts = []) {
 
 module.exports = {
   AI_CONFIG_OPTION_VALUES,
+  WEAPON_PRIORITY_TIER_LIST,
+  ROCKET_LAUNCHER_TOTAL_ROCKETS,
   CLASS_SCALING_ANCHORS,
   ROLE_METADATA,
   ARCHETYPES,
   getTargetClassSplit,
+  getWeaponPriorityRank,
+  resolveFightingStyle,
   detectSoldierArchetype,
   pickBestWeaponOption,
   computeOptimalAiConfig,
