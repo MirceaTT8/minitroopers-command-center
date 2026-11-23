@@ -311,26 +311,16 @@ function getFightKey {
         return 1
     fi
 
-    local best_opp=""
-    best_opp=$(awk '
+    local best_info=""
+    best_info=$(awk '
         BEGIN {
             best_opp = ""
-            min_avg = 999999
-            troops = 0
+            min_power = 999999
             current_opp = ""
             in_po = 0
         }
-        /class="backchoose"/ {
-            troops = 0
-            current_opp = ""
-            in_po = 0
-        }
-        /class="tcard"/ {
-            line = $0
-            while (match(line, /class="tcard"/)) {
-                troops++
-                line = substr(line, RSTART + RLENGTH)
-            }
+        {
+            gsub(/\r/, "")
         }
         /opp=[0-9]+/ {
             if (match($0, /opp=[0-9]+/)) {
@@ -340,31 +330,34 @@ function getFightKey {
         /<li class="po">/ {
             in_po = 1
         }
-        in_po && /^[ \t]*[0-9]+[ \t]*$/ {
+        in_po {
             line = $0
-            gsub(/[^0-9]/, "", line)
-            power = line + 0
-            if (current_opp != "" && troops > 0 && power > 0) {
-                avg = power / troops
-                printf "  [Eval] %-12s | Power: %2d | Troops: %d | Avg: %.2f\n", current_opp, power, troops, avg > "/dev/stderr"
-                if (avg < min_avg) {
-                    min_avg = avg
-                    best_opp = current_opp
+            gsub(/<[^>]*>/, "", line)
+            if (match(line, /[0-9]+/)) {
+                power = substr(line, RSTART, RLENGTH) + 0
+                if (current_opp != "" && power > 0) {
+                    if (power < min_power) {
+                        min_power = power
+                        best_opp = current_opp
+                    }
                 }
+                current_opp = ""
+                in_po = 0
             }
-            in_po = 0
+            if ($0 ~ /<\/li>/) {
+                in_po = 0
+            }
         }
         END {
             if (best_opp != "") {
-                printf "  [Selected] %s (Lowest Avg: %.2f)\n", best_opp, min_avg > "/dev/stderr"
-                print best_opp
+                print best_opp, min_power
             }
         }
     ' "$tmp_opp")
 
-    if [[ -n "$best_opp" ]]; then
+    if [[ -n "$best_info" ]]; then
         rm -f "$tmp_opp"
-        echo "$best_opp"
+        echo "$best_info"
         return 0
     fi
 
@@ -372,7 +365,7 @@ function getFightKey {
     fallback_opp=$(grep -Eo 'opp=[0-9]+' "$tmp_opp" | head -n 1)
     if [[ -n "$fallback_opp" ]]; then
         rm -f "$tmp_opp"
-        echo "$fallback_opp"
+        echo "$fallback_opp ?"
         return 0
     fi
 
@@ -398,10 +391,12 @@ function fightRandom {
     local tmp_hq="$cookie_file.hq.html"
 
     for i in {1..6}; do
-        local key=""
-        key="$(getFightKey)"
-        if [[ -n "$key" ]]; then
-            echo -n "  Battle $i/6: Attacking opponent ($key)... "
+        local opp_info=""
+        opp_info="$(getFightKey)"
+        if [[ -n "$opp_info" ]]; then
+            local key="${opp_info%% *}"
+            local opp_power="${opp_info#* }"
+            echo -n "  Battle $i/6: Attacking opponent ($key, power = $opp_power)... "
             safeCurl "/dev/null" "$site/b/battle?$key"
 
             safeCurl "$tmp_hq" "$site/hq"
@@ -425,6 +420,41 @@ function fightRandom {
     rm -f "$tmp_hq"
 }
 
+function fightRandom {
+    echo "========================================="
+    echo "Starting Battles phase (Random)..."
+
+    local tmp_hq="$cookie_file.hq.html"
+
+    for i in {1..6}; do
+        local opp_info=""
+        opp_info="$(getFightKey)"
+        if [[ -n "$opp_info" ]]; then
+            local key="${opp_info%% *}"
+            local opp_power="${opp_info#* }"
+            echo -n "  Battle $i/6: Attacking opponent ($key, power = $opp_power)... "
+            safeCurl "/dev/null" "$site/b/battle?$key"
+
+            safeCurl "$tmp_hq" "$site/hq"
+            local last_bat=""
+            if [[ -s "$tmp_hq" ]]; then
+                last_bat=$(grep "bat_tip" "$tmp_hq" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
+            fi
+            if [[ "$last_bat" == "bwin_bg" ]]; then
+                echo "WON!"
+            else
+                echo "LOST!"
+            fi
+
+            sleep "$delay_between_battles"
+        else
+            echo "  Battle $i/6: No opponent found on /b/opp (0 battles left or page error)."
+            break
+        fi
+    done
+
+    rm -f "$tmp_hq"
+}
 # =========================================================================
 # RAID FUNCTIONS
 # =========================================================================
