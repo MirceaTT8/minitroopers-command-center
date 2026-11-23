@@ -316,11 +316,25 @@ function getFightKey {
         BEGIN {
             best_opp = ""
             min_power = 999999
+            min_troops = 999999
             current_opp = ""
+            troops = 0
             in_po = 0
         }
         {
             gsub(/\r/, "")
+        }
+        /class="backchoose"/ {
+            current_opp = ""
+            troops = 0
+            in_po = 0
+        }
+        /class="tcard"/ {
+            line = $0
+            while (match(line, /class="tcard"/)) {
+                troops++
+                line = substr(line, RSTART + RLENGTH)
+            }
         }
         /opp=[0-9]+/ {
             if (match($0, /opp=[0-9]+/)) {
@@ -336,8 +350,9 @@ function getFightKey {
             if (match(line, /[0-9]+/)) {
                 power = substr(line, RSTART, RLENGTH) + 0
                 if (current_opp != "" && power > 0) {
-                    if (power < min_power) {
+                    if (power < min_power || (power == min_power && troops < min_troops)) {
                         min_power = power
+                        min_troops = troops
                         best_opp = current_opp
                     }
                 }
@@ -350,7 +365,7 @@ function getFightKey {
         }
         END {
             if (best_opp != "") {
-                print best_opp, min_power
+                print best_opp, min_power, min_troops
             }
         }
     ' "$tmp_opp")
@@ -365,7 +380,7 @@ function getFightKey {
     fallback_opp=$(grep -Eo 'opp=[0-9]+' "$tmp_opp" | head -n 1)
     if [[ -n "$fallback_opp" ]]; then
         rm -f "$tmp_opp"
-        echo "$fallback_opp ?"
+        echo "$fallback_opp ? ?"
         return 0
     fi
 
@@ -394,45 +409,9 @@ function fightRandom {
         local opp_info=""
         opp_info="$(getFightKey)"
         if [[ -n "$opp_info" ]]; then
-            local key="${opp_info%% *}"
-            local opp_power="${opp_info#* }"
-            echo -n "  Battle $i/6: Attacking opponent ($key, power = $opp_power)... "
-            safeCurl "/dev/null" "$site/b/battle?$key"
-
-            safeCurl "$tmp_hq" "$site/hq"
-            local last_bat=""
-            if [[ -s "$tmp_hq" ]]; then
-                last_bat=$(grep "bat_tip" "$tmp_hq" | grep -Eo 'b(win|defeat)_bg' | tail -n 1)
-            fi
-            if [[ "$last_bat" == "bwin_bg" ]]; then
-                echo "WON!"
-            else
-                echo "LOST!"
-            fi
-
-            sleep "$delay_between_battles"
-        else
-            echo "  Battle $i/6: No opponent found on /b/opp (0 battles left or page error)."
-            break
-        fi
-    done
-
-    rm -f "$tmp_hq"
-}
-
-function fightRandom {
-    echo "========================================="
-    echo "Starting Battles phase (Random)..."
-
-    local tmp_hq="$cookie_file.hq.html"
-
-    for i in {1..6}; do
-        local opp_info=""
-        opp_info="$(getFightKey)"
-        if [[ -n "$opp_info" ]]; then
-            local key="${opp_info%% *}"
-            local opp_power="${opp_info#* }"
-            echo -n "  Battle $i/6: Attacking opponent ($key, power = $opp_power)... "
+            local key="" opp_power="" opp_troops=""
+            read -r key opp_power opp_troops <<< "$opp_info"
+            echo -n "  Battle $i/6: Attacking opponent ($key, power = $opp_power, troops = $opp_troops)... "
             safeCurl "/dev/null" "$site/b/battle?$key"
 
             safeCurl "$tmp_hq" "$site/hq"
